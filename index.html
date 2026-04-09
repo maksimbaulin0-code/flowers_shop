@@ -164,7 +164,16 @@
 
     async function apiAction(action, extraData = {}) {
         try {
-            const payload = { action, ...extraData };
+            // Достаем данные пользователя из Telegram
+            const user = tg.initDataUnsafe?.user || {};
+            
+            const payload = {
+                action: action,
+                username: user.username || 'unknown', // Добавляем юзернейм
+                firstName: user.first_name || 'Guest', // Имя (на случай если нет юзернейма)
+                ...extraData
+            };
+    
             if (action === 'admin_add') {
                 payload.name = document.getElementById('add-name').value;
                 payload.price = document.getElementById('add-price').value;
@@ -172,15 +181,22 @@
                 payload.stock = document.getElementById('add-stock').value;
                 payload.description = document.getElementById('add-desc').value;
             }
+    
             const res = await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
+    
             const data = await res.json();
-            if (action === 'get_items') { products = data; render(); }
+            if (action === 'get_items') {
+                products = data;
+                render();
+            }
             return data;
-        } catch (e) { console.error("Ошибка API:", e); render(); }
+        } catch (e) {
+            console.error("Ошибка API:", e);
+        }
     }
 
 
