@@ -183,6 +183,36 @@
         } catch (e) { console.error("Ошибка API:", e); render(); }
     }
 
+
+    // 1. Меняем значение только в интерфейсе (без запроса к n8n)
+    function changeLocalStock(id, delta, manualValue = null) {
+        const p = products.find(x => x.id === id);
+        const input = document.getElementById(`stock-input-${id}`);
+        
+        if (manualValue !== null) {
+            p.stock = parseInt(manualValue) || 0;
+        } else {
+            p.stock = Math.max(0, p.stock + delta);
+        }
+        
+        input.value = p.stock;
+        tg.HapticFeedback.impactOccurred('light');
+    }
+    
+    // 2. Отправляем итоговое значение в n8n ОДНИМ запросом
+    async function saveStock(id) {
+        const p = products.find(x => x.id === id);
+        tg.MainButton.setText("СОХРАНЕНИЕ...").show();
+        
+        // В extraData теперь передаем итоговое значение (total), а не дельту
+        await apiAction('update_stock', { 
+            id: id, 
+            totalStock: p.stock 
+        });
+        
+        tg.MainButton.hide();
+        tg.showAlert(`Запас ${p.name} обновлен до ${p.stock}`);
+    }
     function render() {
         const container = document.getElementById('catalog-container');
         const adminList = document.getElementById('admin-list');
