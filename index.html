@@ -398,6 +398,13 @@
             tg.MainButton.hide();
             tg.showAlert("Ошибка при создании платежа. Попробуйте позже.");
         }
+        if (res.orderId) {
+            paymentCheckInterval = setInterval(() => {
+                checkPaymentStatus(res.orderId);
+            }, 3000);
+        }
+        
+        tg.openLink(res.paymentUrl);
     }
 
     function switchPage(page, el) {
