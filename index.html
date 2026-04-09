@@ -12,7 +12,7 @@
         :root {
             --bg: #000000;
             --card-bg: #0a0a0a;
-            --accent: #00ff88; /* Electric Emerald */
+            --accent: #00ff88;
             --accent-dim: rgba(0, 255, 136, 0.1);
             --text-main: #ffffff;
             --text-dim: #666666;
@@ -26,26 +26,19 @@
             font-family: 'Geist', sans-serif;
             background-color: var(--bg);
             color: var(--text-main);
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             line-height: 1.5;
+            overflow-x: hidden;
         }
 
         #app { padding: 20px; padding-bottom: 100px; }
 
-        /* Typography */
         h1 { font-size: 28px; font-weight: 800; letter-spacing: -1px; margin: 0; text-transform: uppercase; }
         h2 { font-size: 20px; font-weight: 600; margin-bottom: 20px; color: var(--text-main); }
-
         .subtitle { color: var(--text-dim); font-size: 13px; margin-bottom: 30px; display: block; }
 
-        /* Catalog Grid */
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
+        /* Catalog */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
@@ -54,115 +47,73 @@
             position: relative;
             transition: all 0.3s ease;
         }
-
         .card:active { transform: scale(0.97); }
-
-        .card-img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            border-bottom: 1px solid var(--border);
-        }
-
+        .card-img { width: 100%; height: 180px; object-fit: cover; border-bottom: 1px solid var(--border); }
         .card-content { padding: 14px; }
-        .card-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
         .card-price { font-size: 18px; font-weight: 700; color: var(--accent); }
-        
         .card-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
-            padding: 4px 8px;
-            border-radius: 8px;
-            font-size: 10px;
-            color: var(--text-main);
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            padding: 4px 8px; border-radius: 8px; font-size: 10px;
             border: 1px solid var(--border);
         }
 
-        /* Admin Controls */
-        .admin-item {
+        /* Modal / Product Detail */
+        .modal {
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); z-index: 1000;
+            padding: 20px; overflow-y: auto;
+        }
+        .modal-content { max-width: 500px; margin: 0 auto; padding-bottom: 40px; }
+        .modal-img { width: 100%; height: 350px; object-fit: cover; border-radius: 24px; margin-bottom: 20px; }
+        .desc-text { color: var(--text-dim); margin: 20px 0; font-size: 15px; line-height: 1.6; }
+        
+        .order-section {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 20px;
         }
 
+        .counter {
+            display: flex; align-items: center; gap: 20px;
+            background: var(--glass); padding: 8px 16px;
+            border-radius: 12px; width: fit-content; margin-bottom: 20px;
+        }
+
+        /* Inputs & Buttons */
         .input-group { margin-bottom: 15px; }
         label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 6px; margin-left: 4px; }
+        input, textarea {
+            width: 100%; background: var(--card-bg);
+            border: 1px solid var(--border); color: #fff;
+            padding: 14px; border-radius: 12px;
+            font-family: inherit; font-size: 14px; outline: none;
+        }
+        input:focus, textarea:focus { border-color: var(--accent); }
         
-        input {
-            width: 100%;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            color: #fff;
-            padding: 14px;
-            border-radius: 12px;
-            font-family: inherit;
-            font-size: 14px;
-            outline: none;
-        }
-
-        input:focus { border-color: var(--accent); }
-
-        /* Buttons */
         .btn {
-            background: var(--accent);
-            color: #000;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-weight: 700;
-            width: 100%;
-            font-family: inherit;
-            cursor: pointer;
-            transition: opacity 0.2s;
+            background: var(--accent); color: #000;
+            border: none; padding: 16px; border-radius: 14px;
+            font-weight: 700; width: 100%; font-family: inherit;
+            cursor: pointer; transition: opacity 0.2s;
         }
+        .btn-secondary { background: var(--accent-dim); color: var(--accent); }
+        .btn-sm { padding: 8px 16px; width: auto; font-size: 14px; }
 
-        .btn-secondary {
-            background: var(--accent-dim);
-            color: var(--accent);
-            margin-top: 10px;
-        }
-
-        .btn-sm { padding: 6px 12px; font-size: 12px; width: auto; }
-
-        /* Navigation */
+        /* Nav */
         .nav {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px);
-            max-width: 400px;
-            background: rgba(15, 15, 15, 0.8);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            display: flex;
-            padding: 8px;
-            z-index: 100;
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%); width: calc(100% - 40px);
+            max-width: 400px; background: rgba(15, 15, 15, 0.8);
+            backdrop-filter: blur(20px); border: 1px solid var(--border);
+            border-radius: 24px; display: flex; padding: 8px; z-index: 100;
         }
-
-        .nav-btn {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-dim);
-            cursor: pointer;
-            border-radius: 18px;
-        }
-
+        .nav-btn { flex: 1; padding: 12px; text-align: center; font-size: 13px; color: var(--text-dim); border-radius: 18px; }
         .nav-btn.active { background: var(--glass); color: var(--accent); }
-
-        /* States */
         .sold-out { opacity: 0.4; pointer-events: none; }
     </style>
 </head>
@@ -172,51 +123,25 @@
     <div id="shop-page">
         <h1>Renerie Ciel</h1>
         <span class="subtitle">Premium Floral Boutique</span>
-        
-        <div class="grid" id="catalog-container">
-            <div class="card">
-                <div style="height:180px; background: #111;"></div>
-                <div class="card-content">
-                    <div style="height:15px; width:70%; background: #111; margin-bottom:10px;"></div>
-                    <div style="height:20px; width:40%; background: #111;"></div>
-                </div>
-            </div>
-            <div class="card">
-                <div style="height:180px; background: #111;"></div>
-                <div class="card-content">
-                    <div style="height:15px; width:70%; background: #111; margin-bottom:10px;"></div>
-                    <div style="height:20px; width:40%; background: #111;"></div>
-                </div>
-            </div>
-        </div>
+        <div class="grid" id="catalog-container"></div>
     </div>
 
     <div id="admin-page" style="display: none;">
-        <h2>Управление складом</h2>
-        
+        <h2>Управление</h2>
         <div style="background: var(--card-bg); border: 1px solid var(--border); padding: 20px; border-radius: 20px; margin-bottom: 30px;">
-            <div class="input-group">
-                <label>Название</label>
-                <input type="text" id="add-name" placeholder="Midnight Orchid">
-            </div>
-            <div class="input-group">
-                <label>Цена (₽)</label>
-                <input type="number" id="add-price" placeholder="4500">
-            </div>
-            <div class="input-group">
-                <label>URL Фото</label>
-                <input type="text" id="add-img" placeholder="https://...">
-            </div>
-            <div class="input-group">
-                <label>Количество</label>
-                <input type="number" id="add-stock" placeholder="10">
-            </div>
+            <div class="input-group"><label>Название</label><input type="text" id="add-name" placeholder="Midnight Orchid"></div>
+            <div class="input-group"><label>Цена (₽)</label><input type="number" id="add-price" placeholder="4500"></div>
+            <div class="input-group"><label>URL Фото</label><input type="text" id="add-img" placeholder="https://..."></div>
+            <div class="input-group"><label>Количество</label><input type="number" id="add-stock" placeholder="10"></div>
+            <div class="input-group"><label>Описание</label><textarea id="add-desc" rows="3" placeholder="Расскажите о букете..."></textarea></div>
             <button class="btn" onclick="apiAction('admin_add')">Добавить в каталог</button>
         </div>
-
-        <div id="admin-list">
-            </div>
+        <div id="admin-list"></div>
     </div>
+</div>
+
+<div id="product-modal" class="modal">
+    <div class="modal-content" id="modal-body"></div>
 </div>
 
 <nav class="nav">
@@ -230,66 +155,42 @@
     tg.headerColor = '#000000';
 
     const API_URL = 'https://scarface.app.n8n.cloud/webhook-test/9807132c-fdc3-4e47-bb28-144e16feebe1';
-    const MY_ID = 784237794; // ЗАМЕНИ НА СВОЙ ID
+    const MY_ID = 784237794;
 
-    // Показываем админку если ID совпадает
-    if (tg.initDataUnsafe?.user?.id === MY_ID) {
-        document.getElementById('nav-admin').style.display = 'block';
-    }
+    if (tg.initDataUnsafe?.user?.id === MY_ID) document.getElementById('nav-admin').style.display = 'block';
 
-    // Имитация данных (заполнение), пока n8n не подключен
-    let products = [
-        { id: 1, name: "Obsidian Rose", price: 5200, stock: 4, image: "https://images.unsplash.com/photo-1550345332-09e3ac987658?q=80&w=500" },
-        { id: 2, name: "Neon Lilies", price: 3800, stock: 0, image: "https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?q=80&w=500" },
-        { id: 3, name: "Graphite Peony", price: 4100, stock: 12, image: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?q=80&w=500" }
-    ];
+    let products = [];
+    let currentOrder = { id: null, count: 1 };
 
     async function apiAction(action, extraData = {}) {
         try {
-            // Подготавливаем объект данных
-            const payload = {
-                action: action,
-                ...extraData
-            };
-    
-            // Если добавляем товар, берем данные из полей
+            const payload = { action, ...extraData };
             if (action === 'admin_add') {
                 payload.name = document.getElementById('add-name').value;
                 payload.price = document.getElementById('add-price').value;
                 payload.image = document.getElementById('add-img').value;
                 payload.stock = document.getElementById('add-stock').value;
+                payload.description = document.getElementById('add-desc').value;
             }
-    
-            const res = await fetch(`${API_URL}`, {
+            const res = await fetch(API_URL, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json' // КРИТИЧЕСКИ ВАЖНО
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-    
             const data = await res.json();
-    
-            if (action === 'get_items') {
-                products = data;
-                render();
-            }
+            if (action === 'get_items') { products = data; render(); }
             return data;
-        } catch (e) {
-            console.error("Ошибка API:", e);
-            render(); 
-        }
+        } catch (e) { console.error("Ошибка API:", e); render(); }
     }
 
     function render() {
         const container = document.getElementById('catalog-container');
         const adminList = document.getElementById('admin-list');
-
-        // Рендер каталога
+        
         container.innerHTML = products.map(p => `
-            <div class="card ${p.stock <= 0 ? 'sold-out' : ''}" onclick="pay(${p.id})">
+            <div class="card ${p.stock <= 0 ? 'sold-out' : ''}" onclick="openProduct(${p.id})">
                 <div class="card-badge">${p.stock > 0 ? `In Stock: ${p.stock}` : 'Sold Out'}</div>
-                <img src="${p.image}" class="card-img" alt="">
+                <img src="${p.image}" class="card-img">
                 <div class="card-content">
                     <div class="card-title">${p.name}</div>
                     <div class="card-price">${p.price} ₽</div>
@@ -297,7 +198,6 @@
             </div>
         `).join('');
 
-        // Рендер списка в админке
         adminList.innerHTML = products.map(p => `
             <div class="admin-item">
                 <div>
@@ -312,6 +212,78 @@
         `).join('');
     }
 
+    function openProduct(id) {
+        const p = products.find(x => x.id === id);
+        currentOrder = { id: p.id, count: 1 };
+        
+        document.getElementById('modal-body').innerHTML = `
+            <img src="${p.image}" class="modal-img">
+            <h1>${p.name}</h1>
+            <div class="card-price" style="font-size: 24px; margin-top: 8px;">${p.price} ₽</div>
+            <p class="desc-text">${p.description || 'Изысканный букет для особого случая.'}</p>
+            
+            <div class="order-section">
+                <label>Количество</label>
+                <div class="counter">
+                    <button class="btn btn-sm btn-secondary" onclick="changeCount(-1)">-</button>
+                    <span id="order-count" style="font-weight: 700; min-width: 20px; text-align: center;">1</span>
+                    <button class="btn btn-sm btn-secondary" onclick="changeCount(1, ${p.stock})">+</button>
+                </div>
+
+                <div class="input-group">
+                    <label>Ваше имя</label>
+                    <input type="text" id="cust-name" placeholder="Как к вам обращаться?">
+                </div>
+                <div class="input-group">
+                    <label>Телефон</label>
+                    <input type="tel" id="cust-phone" placeholder="+7 (___) ___-__-__">
+                </div>
+                
+                <button class="btn" onclick="startPayment()">Заказать и оплатить</button>
+            </div>
+        `;
+        document.getElementById('product-modal').style.display = 'block';
+        tg.BackButton.show();
+        tg.BackButton.onClick(closeModal);
+    }
+
+    function changeCount(delta, max) {
+        let newCount = currentOrder.count + delta;
+        if (newCount >= 1 && (!max || newCount <= max)) {
+            currentOrder.count = newCount;
+            document.getElementById('order-count').innerText = newCount;
+            tg.HapticFeedback.impactOccurred('light');
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('product-modal').style.display = 'none';
+        tg.BackButton.hide();
+    }
+
+    async function startPayment() {
+        const name = document.getElementById('cust-name').value;
+        const phone = document.getElementById('cust-phone').value;
+        
+        if(!name || !phone) {
+            tg.showAlert("Пожалуйста, заполните имя и телефон для связи.");
+            return;
+        }
+
+        tg.MainButton.setText("ОФОРМЛЕНИЕ ПЛАТЕЖА...").show();
+        
+        const res = await apiAction('pay', {
+            productId: currentOrder.id,
+            count: currentOrder.count,
+            customerName: name,
+            customerPhone: phone,
+            userId: tg.initDataUnsafe?.user?.id
+        });
+
+        if (res?.paymentUrl) tg.openLink(res.paymentUrl);
+        tg.MainButton.hide();
+    }
+
     function switchPage(page, el) {
         document.getElementById('shop-page').style.display = page === 'shop' ? 'block' : 'none';
         document.getElementById('admin-page').style.display = page === 'admin' ? 'block' : 'none';
@@ -320,22 +292,13 @@
         tg.HapticFeedback.impactOccurred('light');
     }
 
-    async function pay(id) {
-        tg.HapticFeedback.selectionChanged();
-        const res = await apiAction('pay', { productId: id, userId: tg.initDataUnsafe?.user?.id });
-        if (res?.paymentUrl) tg.openLink(res.paymentUrl);
-    }
-
     async function updateStock(id, delta) {
-        tg.HapticFeedback.impactOccurred('medium');
         await apiAction('update_stock', { id, delta });
-        // В реальности n8n вернет обновленный список, тут просто обновим локально для вида
         const p = products.find(x => x.id === id);
-        if (p) p.stock += delta;
+        if (p) p.stock = Math.max(0, p.stock + delta);
         render();
     }
 
-    // Инициализация
     apiAction('get_items');
 </script>
 </body>
