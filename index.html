@@ -37,6 +37,32 @@
         h2 { font-size: 20px; font-weight: 600; margin-bottom: 20px; color: var(--text-main); }
         .subtitle { color: var(--text-dim); font-size: 13px; margin-bottom: 30px; display: block; }
 
+        .pay-loading {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--accent-dim);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .retry-link {
+            display: block;
+            margin-top: 15px;
+            color: var(--accent);
+            font-size: 14px;
+            text-decoration: none;
+            border: 1px dashed var(--accent);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
         /* Catalog */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .card {
@@ -322,8 +348,10 @@
             tg.showAlert("Пожалуйста, заполните имя и телефон для связи.");
             return;
         }
-
-        tg.MainButton.setText("ОФОРМЛЕНИЕ ПЛАТЕЖА...").show();
+    
+        // Сохраняем ссылку на контейнер формы
+        const orderSection = document.querySelector('.order-section');
+        tg.MainButton.setText("ПОДГОТОВКА ОПЛАТЫ...").show();
         
         const res = await apiAction('pay', {
             productId: currentOrder.id,
@@ -332,9 +360,30 @@
             customerPhone: phone,
             userId: tg.initDataUnsafe?.user?.id
         });
-
-        if (res?.paymentUrl) tg.openLink(res.paymentUrl);
-        tg.MainButton.hide();
+    
+        if (res?.paymentUrl) {
+            // Меняем интерфейс на "Ожидание оплаты"
+            orderSection.innerHTML = `
+                <div class="pay-loading">
+                    <div class="spinner"></div>
+                    <h3 style="margin:0">Ожидаем оплату...</h3>
+                    <p style="font-size:13px; color:var(--text-dim)">Вы были перенаправлены в платежную систему</p>
+                    <a href="${res.paymentUrl}" target="_blank" class="retry-link">
+                        🔗 Ссылка на оплату (если не открылась)
+                    </a>
+                    <button class="btn btn-secondary" style="margin-top:20px" onclick="closeModal()">
+                        Вернуться к покупкам
+                    </button>
+                </div>
+            `;
+            
+            tg.MainButton.hide();
+            // Пробуем открыть ссылку автоматически
+            tg.openLink(res.paymentUrl);
+        } else {
+            tg.MainButton.hide();
+            tg.showAlert("Ошибка при создании платежа. Попробуйте позже.");
+        }
     }
 
     function switchPage(page, el) {
