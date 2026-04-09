@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Ciel Flowers</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --card-bg: #141414;
+            --accent: #00ff88; /* Неоновый зеленый или выбери свой */
+            --text-main: #ffffff;
+            --text-dim: #888888;
+            --danger: #ff4d4d;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        #app { padding: 20px; padding-bottom: 80px; }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 { font-size: 24px; font-weight: 700; letter-spacing: -1px; margin: 0; }
+
+        /* Grid */
+        .flower-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #222;
+            transition: transform 0.2s;
+        }
+
+        .card img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+        }
+
+        .card-info { padding: 12px; }
+        .card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .card-price { font-size: 16px; color: var(--accent); font-weight: 700; }
+        .card-stock { font-size: 11px; color: var(--text-dim); margin-top: 5px; }
+
+        .btn-buy {
+            width: 100%;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .sold-out { opacity: 0.5; filter: grayscale(1); }
+
+        /* Admin Section */
+        .admin-panel {
+            display: none;
+            background: #111;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        input, select {
+            width: 100%;
+            background: #1c1c1c;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            border-top: 1px solid #222;
+        }
+
+        .tab-item { color: var(--text-dim); text-decoration: none; font-size: 12px; cursor: pointer; }
+        .tab-item.active { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="shop-page">
+        <div class="header">
+            <h1>RENERIE CIEL</h1>
+            <span id="admin-badge" style="display:none; color: var(--accent); font-size: 10px; border: 1px solid; padding: 2px 6px; border-radius: 4px;">ADMIN</span>
+        </div>
+        <div class="flower-grid" id="catalog">
+            </div>
+    </div>
+
+    <div id="admin-page" style="display: none;">
+        <h2>Управление</h2>
+        <div class="admin-panel" style="display: block;">
+            <input type="text" id="name" placeholder="Название букета">
+            <input type="number" id="price" placeholder="Цена">
+            <input type="text" id="img-url" placeholder="Ссылка на фото">
+            <input type="number" id="stock" placeholder="Количество">
+            <button class="btn-buy" onclick="addProduct()">Добавить букет</button>
+        </div>
+        <div id="admin-list"></div>
+    </div>
+</div>
+
+<div class="tab-bar">
+    <div class="tab-item active" onclick="showPage('shop')">Магазин</div>
+    <div class="tab-item" id="admin-tab" style="display:none" onclick="showPage('admin')">Админка</div>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    const N8N_WEBHOOK = 'https://your-n8n-instance.com/webhook/flowers';
+    const ADMIN_ID = 12345678; // Твой ID в телеге
+
+    let products = [];
+
+    // Проверка на админа
+    if (tg.initDataUnsafe.user && tg.initDataUnsafe.user.id === ADMIN_ID) {
+        document.getElementById('admin-tab').style.display = 'block';
+        document.getElementById('admin-badge').style.display = 'block';
+    }
+
+    async function loadProducts() {
+        const res = await fetch(`${N8N_WEBHOOK}/get-items`);
+        products = await res.json();
+        renderCatalog();
+    }
+
+    function renderCatalog() {
+        const container = document.getElementById('catalog');
+        container.innerHTML = products.map(p => `
+            <div class="card ${p.stock <= 0 ? 'sold-out' : ''}">
+                <img src="${p.image}" alt="">
+                <div class="card-info">
+                    <div class="card-title">${p.name}</div>
+                    <div class="card-price">${p.price} ₽</div>
+                    <div class="card-stock">${p.stock > 0 ? `Остаток: ${p.stock}` : 'Продано'}</div>
+                    ${p.stock > 0 ? `<button class="btn-buy" onclick="createOrder(${p.id})">Купить</button>` : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function createOrder(productId) {
+        tg.MainButton.setText('ОФОРМЛЯЕМ ПЛАТЕЖ...').show();
+        
+        const response = await fetch(`${N8N_WEBHOOK}/pay`, {
+            method: 'POST',
+            body: JSON.stringify({
+                userId: tg.initDataUnsafe.user.id,
+                productId: productId
+            })
+        });
+        
+        const data = await response.json();
+        if (data.paymentUrl) {
+            tg.openLink(data.paymentUrl);
+        }
+    }
+
+    // Админка: Добавление
+    async function addProduct() {
+        const payload = {
+            name: document.getElementById('name').value,
+            price: document.getElementById('price').value,
+            image: document.getElementById('img-url').value,
+            stock: document.getElementById('stock').value,
+            action: 'add'
+        };
+        await fetch(`${N8N_WEBHOOK}/admin`, { method: 'POST', body: JSON.stringify(payload) });
+        loadProducts();
+    }
+
+    function showPage(page) {
+        document.getElementById('shop-page').style.display = page === 'shop' ? 'block' : 'none';
+        document.getElementById('admin-page').style.display = page === 'admin' ? 'block' : 'none';
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+
+    loadProducts();
+</script>
+</body>
+</html>
