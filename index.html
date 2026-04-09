@@ -290,20 +290,6 @@
         </div>
     `).join('');
     }
-
-    let paymentCheckInterval;
-
-    async function checkPaymentStatus(orderId) {
-        const res = await apiAction('check_status', { orderId: orderId });
-        
-        if (res?.status === 'paid') {
-            clearInterval(paymentCheckInterval);
-            tg.HapticFeedback.notificationOccurred('success');
-            tg.showAlert("Оплата получена! Спасибо за заказ.");
-            closeModal(); // Закрываем окно
-            apiAction('get_items'); // Обновляем каталог (остатки)
-        }
-    }
     
     function openProduct(id) {
         const p = products.find(x => x.id === id);
@@ -398,13 +384,6 @@
             tg.MainButton.hide();
             tg.showAlert("Ошибка при создании платежа. Попробуйте позже.");
         }
-        if (res.orderId) {
-            paymentCheckInterval = setInterval(() => {
-                checkPaymentStatus(res.orderId);
-            }, 3000);
-        }
-        
-        tg.openLink(res.paymentUrl);
     }
 
     function switchPage(page, el) {
