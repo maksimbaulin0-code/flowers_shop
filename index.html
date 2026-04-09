@@ -245,28 +245,31 @@
     ];
 
     async function apiAction(action, extraData = {}) {
-        // Теперь ВСЁ идет через POST
         try {
+            // Подготавливаем объект данных
+            const payload = {
+                action: action,
+                ...extraData
+            };
+    
+            // Если добавляем товар, берем данные из полей
+            if (action === 'admin_add') {
+                payload.name = document.getElementById('add-name').value;
+                payload.price = document.getElementById('add-price').value;
+                payload.image = document.getElementById('add-img').value;
+                payload.stock = document.getElementById('add-stock').value;
+            }
+    
             const res = await fetch(`${API_URL}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json' // КРИТИЧЕСКИ ВАЖНО
                 },
-                body: JSON.stringify({
-                    action: action, // Передаем действие внутрь тела
-                    ...extraData,
-                    // Если это добавление товара, подтягиваем данные из инпутов
-                    ...(action === 'admin_add' ? {
-                        name: document.getElementById('add-name').value,
-                        price: document.getElementById('add-price').value,
-                        image: document.getElementById('add-img').value, // поправил img на image для базы
-                        stock: document.getElementById('add-stock').value
-                    } : {})
-                })
+                body: JSON.stringify(payload)
             });
-            
+    
             const data = await res.json();
-            
+    
             if (action === 'get_items') {
                 products = data;
                 render();
