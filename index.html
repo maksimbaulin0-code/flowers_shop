@@ -18,6 +18,8 @@
             --text-dim: #666666;
             --border: #1a1a1a;
             --glass: rgba(255, 255, 255, 0.03);
+            --status-paid: #00ff88;
+            --status-pending: #ffcc00;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -31,78 +33,39 @@
             overflow-x: hidden;
         }
 
-        #app { padding: 20px; padding-bottom: 100px; }
+        #app { padding: 20px; padding-bottom: 120px; }
 
         h1 { font-size: 28px; font-weight: 800; letter-spacing: -1px; margin: 0; text-transform: uppercase; }
-        h2 { font-size: 20px; font-weight: 600; margin-bottom: 20px; color: var(--text-main); }
         .subtitle { color: var(--text-dim); font-size: 13px; margin-bottom: 30px; display: block; }
 
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Каталог */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            overflow: hidden;
-            position: relative;
-            transition: all 0.3s ease;
-        }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; position: relative; transition: transform 0.2s; }
         .card:active { transform: scale(0.97); }
-        .card-img { width: 100%; height: 180px; object-fit: cover; border-bottom: 1px solid var(--border); }
+        .card-img { width: 100%; height: 180px; object-fit: cover; }
         .card-content { padding: 14px; }
-        .card-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
         .card-price { font-size: 18px; font-weight: 700; color: var(--accent); }
-        .card-badge {
-            position: absolute; top: 10px; right: 10px;
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
-            padding: 4px 8px; border-radius: 8px; font-size: 10px;
-            border: 1px solid var(--border);
-        }
 
-        .modal {
-            display: none; position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg); z-index: 1000;
-            padding: 20px; overflow-y: auto;
+        /* Профиль и заказы */
+        .order-card {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 16px; padding: 16px; margin-bottom: 12px;
         }
-        .modal-content { max-width: 500px; margin: 0 auto; padding-bottom: 40px; }
-        .modal-img { width: 100%; height: 350px; object-fit: cover; border-radius: 24px; margin-bottom: 20px; }
-        .desc-text { color: var(--text-dim); margin: 20px 0; font-size: 15px; line-height: 1.6; }
-        
-        .order-section {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 20px;
-            margin-top: 20px;
+        .order-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .order-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; }
+        .status-paid { background: var(--accent-dim); color: var(--accent); }
+        .status-pending { background: rgba(255, 204, 0, 0.1); color: #ffcc00; }
+        .order-details { 
+            display: none; margin-top: 10px; padding-top: 10px; 
+            border-top: 1px dashed var(--border); font-size: 13px; 
         }
+        .order-card.open .order-details { display: block; }
 
-        .counter {
-            display: flex; align-items: center; gap: 20px;
-            background: var(--glass); padding: 8px 16px;
-            border-radius: 12px; width: fit-content; margin-bottom: 20px;
-        }
-
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 6px; margin-left: 4px; }
-        input, textarea {
-            width: 100%; background: var(--card-bg);
-            border: 1px solid var(--border); color: #fff;
-            padding: 14px; border-radius: 12px;
-            font-family: inherit; font-size: 14px; outline: none;
-        }
-        input:focus, textarea:focus { border-color: var(--accent); }
-        
-        .btn {
-            background: var(--accent); color: #000;
-            border: none; padding: 16px; border-radius: 14px;
-            font-weight: 700; width: 100%; font-family: inherit;
-            cursor: pointer; transition: opacity 0.2s;
-        }
-        .btn-secondary { background: var(--accent-dim); color: var(--accent); }
-        .btn-sm { padding: 8px 16px; width: auto; font-size: 14px; }
-
-        /* Pay Loading State */
-        .pay-loading { text-align: center; padding: 40px 20px; }
+        /* Оплата (Loading) */
+        .pay-loading { text-align: center; padding: 30px 10px; }
         .spinner {
             width: 40px; height: 40px; border: 4px solid var(--accent-dim);
             border-top: 4px solid var(--accent); border-radius: 50%;
@@ -115,36 +78,47 @@
             padding: 12px; border-radius: 12px;
         }
 
+        /* Формы и модалки */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; padding: 20px; overflow-y: auto; }
+        .input-group { margin-bottom: 15px; }
+        input, textarea { width: 100%; background: var(--card-bg); border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 12px; outline: none; }
+        .btn { background: var(--accent); color: #000; border: none; padding: 16px; border-radius: 14px; font-weight: 700; width: 100%; cursor: pointer; }
+        .btn-secondary { background: var(--glass); color: var(--text-main); border: 1px solid var(--border); }
+        
         .nav {
-            position: fixed; bottom: 20px; left: 50%;
-            transform: translateX(-50%); width: calc(100% - 40px);
-            max-width: 400px; background: rgba(15, 15, 15, 0.8);
-            backdrop-filter: blur(20px); border: 1px solid var(--border);
-            border-radius: 24px; display: flex; padding: 8px; z-index: 100;
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: calc(100% - 40px); max-width: 450px;
+            background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: 24px;
+            display: flex; padding: 6px; z-index: 100;
         }
-        .nav-btn { flex: 1; padding: 12px; text-align: center; font-size: 13px; color: var(--text-dim); border-radius: 18px; }
+        .nav-btn { flex: 1; padding: 12px; text-align: center; font-size: 12px; color: var(--text-dim); border-radius: 18px; }
         .nav-btn.active { background: var(--glass); color: var(--accent); }
-        .sold-out { opacity: 0.4; pointer-events: none; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div id="shop-page">
+    <div id="shop-page" class="page active">
         <h1>Renerie Ciel</h1>
         <span class="subtitle">Premium Floral Boutique</span>
         <div class="grid" id="catalog-container"></div>
     </div>
 
-    <div id="admin-page" style="display: none;">
-        <h2>Управление</h2>
-        <div style="background: var(--card-bg); border: 1px solid var(--border); padding: 20px; border-radius: 20px; margin-bottom: 30px;">
-            <div class="input-group"><label>Название</label><input type="text" id="add-name" placeholder="Midnight Orchid"></div>
-            <div class="input-group"><label>Цена (₽)</label><input type="number" id="add-price" placeholder="4500"></div>
-            <div class="input-group"><label>URL Фото</label><input type="text" id="add-img" placeholder="https://..."></div>
-            <div class="input-group"><label>Количество</label><input type="number" id="add-stock" placeholder="10"></div>
-            <div class="input-group"><label>Описание</label><textarea id="add-desc" rows="3" placeholder="Расскажите о букете..."></textarea></div>
-            <button class="btn" onclick="apiAction('admin_add')">Добавить в каталог</button>
+    <div id="profile-page" class="page">
+        <h1>Мои заказы</h1>
+        <span class="subtitle">Нажмите на заказ, чтобы увидеть детали</span>
+        <div id="orders-container"></div>
+    </div>
+
+    <div id="admin-page" class="page">
+        <h1>Управление</h1>
+        <div style="background: var(--card-bg); padding: 15px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 20px;">
+            <input type="text" id="add-name" placeholder="Название" class="input-group">
+            <input type="number" id="add-price" placeholder="Цена" class="input-group">
+            <input type="text" id="add-img" placeholder="URL фото" class="input-group">
+            <input type="number" id="add-stock" placeholder="Кол-во" class="input-group">
+            <button class="btn" onclick="apiAction('admin_add')">Добавить товар</button>
         </div>
         <div id="admin-list"></div>
     </div>
@@ -156,148 +130,137 @@
 
 <nav class="nav">
     <div class="nav-btn active" onclick="switchPage('shop', this)">Каталог</div>
-    <div class="nav-btn" id="nav-admin" style="display: none;" onclick="switchPage('admin', this)">Управление</div>
+    <div class="nav-btn" onclick="switchPage('profile', this)">Профиль</div>
+    <div class="nav-btn" id="nav-admin" style="display: none;" onclick="switchPage('admin', this)">Админ</div>
 </nav>
 
 <script>
     const tg = window.Telegram.WebApp;
-    tg.expand();
-    tg.headerColor = '#000000';
-
-    const API_URL = 'https://scarface.app.n8n.cloud/webhook-test/9807132c-fdc3-4e47-bb28-144e16feebe1';
+    const API_URL = 'https://scarface.app.n8n.cloud/webhook/9807132c-fdc3-4e47-bb28-144e16feebe1';
     const MY_ID = 784237794;
 
-    if (tg.initDataUnsafe?.user?.id === MY_ID) document.getElementById('nav-admin').style.display = 'block';
-
     let products = [];
-    let currentOrder = { id: null, count: 1 };
     let paymentCheckInterval;
+    let currentOrder = { id: null, count: 1 };
 
     async function apiAction(action, extraData = {}) {
+        const user = tg.initDataUnsafe?.user || {};
+        const payload = {
+            action,
+            userId: user.id,
+            username: user.username || 'unknown',
+            firstName: user.first_name || 'Guest',
+            ...extraData
+        };
+
+        if (action === 'admin_add') {
+            payload.name = document.getElementById('add-name').value;
+            payload.price = document.getElementById('add-price').value;
+            payload.image = document.getElementById('add-img').value;
+            payload.stock = document.getElementById('add-stock').value;
+        }
+
         try {
-            const user = tg.initDataUnsafe?.user || {};
-            const payload = {
-                action: action,
-                username: user.username || 'unknown',
-                firstName: user.first_name || 'Guest',
-                ...extraData
-            };
-    
-            if (action === 'admin_add') {
-                payload.name = document.getElementById('add-name').value;
-                payload.price = document.getElementById('add-price').value;
-                payload.image = document.getElementById('add-img').value;
-                payload.stock = document.getElementById('add-stock').value;
-                payload.description = document.getElementById('add-desc').value;
-            }
-    
             const res = await fetch(API_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
             });
-    
             const data = await res.json();
-            if (action === 'get_items') {
-                products = data;
-                render();
-            }
+            if (action === 'get_items') { products = data; renderCatalog(); renderAdmin(); }
             return data;
-        } catch (e) { console.error("Ошибка API:", e); }
+        } catch(e) { console.error(e); }
     }
 
-    async function checkPaymentStatus(orderId) {
-        const res = await apiAction('check_status', { orderId: orderId });
-        if (res?.status === 'paid') {
-            clearInterval(paymentCheckInterval);
-            tg.HapticFeedback.notificationOccurred('success');
-            tg.showAlert("Оплата успешно подтверждена!");
-            closeModal();
-            apiAction('get_items');
-        }
-    }
-
-    function render() {
+    function renderCatalog() {
         const container = document.getElementById('catalog-container');
-        const adminList = document.getElementById('admin-list');
-        
         container.innerHTML = products.map(p => `
-            <div class="card ${p.stock <= 0 ? 'sold-out' : ''}" onclick="openProduct(${p.id})">
-                <div class="card-badge">${p.stock > 0 ? `In Stock: ${p.stock}` : 'Sold Out'}</div>
+            <div class="card" onclick="openProduct(${p.id})">
                 <img src="${p.image}" class="card-img">
                 <div class="card-content">
-                    <div class="card-title">${p.name}</div>
+                    <div style="font-size:14px; margin-bottom:5px;">${p.name}</div>
                     <div class="card-price">${p.price} ₽</div>
                 </div>
             </div>
         `).join('');
+    }
 
-        adminList.innerHTML = products.map(p => `
-            <div class="admin-item" style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-size:14px; font-weight:500">${p.name}</div>
-                        <div style="font-size:12px; color:var(--text-dim)">ID: ${p.id} | ${p.price} ₽</div>
-                    </div>
-                    <div style="display:flex; gap:8px; align-items: center;">
-                        <button class="btn btn-sm btn-secondary" onclick="changeLocalStock(${p.id}, -1)">-</button>
-                        <input type="number" id="stock-input-${p.id}" value="${p.stock}" 
-                            style="width: 60px; padding: 5px; text-align: center; margin: 0 5px;"
-                            onchange="changeLocalStock(${p.id}, 0, this.value)">
-                        <button class="btn btn-sm btn-secondary" onclick="changeLocalStock(${p.id}, 1)">+</button>
+    function renderAdmin() {
+        const list = document.getElementById('admin-list');
+        list.innerHTML = products.map(p => `
+            <div class="order-card" style="margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><b>${p.name}</b><br><small>Stock: ${p.stock}</small></div>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn btn-secondary" style="padding:5px 10px;" onclick="changeLocalStock(${p.id}, -1)">-</button>
+                        <input type="number" id="stock-in-${p.id}" value="${p.stock}" style="width:50px; padding:5px; text-align:center;" onchange="changeLocalStock(${p.id}, 0, this.value)">
+                        <button class="btn btn-secondary" style="padding:5px 10px;" onclick="changeLocalStock(${p.id}, 1)">+</button>
                     </div>
                 </div>
-                <button class="btn btn-sm" style="background: var(--glass); color: var(--accent); border: 1px solid var(--accent-dim);" 
-                    onclick="saveStock(${p.id})">Сохранить остаток</button>
+                <button class="btn btn-secondary" style="margin-top:10px; font-size:12px;" onclick="saveStock(${p.id})">Сохранить кол-во</button>
             </div>
         `).join('');
     }
 
     function changeLocalStock(id, delta, manualValue = null) {
         const p = products.find(x => x.id === id);
-        const input = document.getElementById(`stock-input-${id}`);
         if (manualValue !== null) p.stock = parseInt(manualValue) || 0;
         else p.stock = Math.max(0, p.stock + delta);
-        input.value = p.stock;
-        tg.HapticFeedback.impactOccurred('light');
+        document.getElementById(`stock-in-${id}`).value = p.stock;
     }
-    
+
     async function saveStock(id) {
         const p = products.find(x => x.id === id);
-        tg.MainButton.setText("СОХРАНЕНИЕ...").show();
         await apiAction('update_stock', { id: id, totalStock: p.stock });
-        tg.MainButton.hide();
-        tg.showAlert(`Запас ${p.name} обновлен.`);
+        tg.showAlert("Запас обновлен");
+    }
+
+    async function loadOrders() {
+        const container = document.getElementById('orders-container');
+        container.innerHTML = '<p style="text-align:center; color:var(--text-dim);">Загрузка заказов...</p>';
+        const orders = await apiAction('get_orders');
+        
+        if (!orders || orders.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:var(--text-dim); margin-top:40px;">Заказов пока нет</p>';
+            return;
+        }
+
+        container.innerHTML = orders.map(o => `
+            <div class="order-card" onclick="this.classList.toggle('open')">
+                <div class="order-header">
+                    <div>
+                        <div style="font-weight:600;">Заказ #${o.orderId ? o.orderId.slice(0,8) : '000'}</div>
+                        <div style="font-size:11px; color:var(--text-dim);">${o.date || ''}</div>
+                    </div>
+                    <div class="order-status ${o.status === 'paid' ? 'status-paid' : 'status-pending'}">${o.status}</div>
+                </div>
+                <div style="color:var(--accent); font-weight:700; margin-top:5px;">${o.amount} ₽</div>
+                <div class="order-details">
+                    <div><b>Состав:</b> ${o.details || 'Букет'}</div>
+                    <div><b>Кол-во:</b> ${o.count || 1} шт.</div>
+                </div>
+            </div>
+        `).join('');
     }
 
     function openProduct(id) {
         const p = products.find(x => x.id === id);
         currentOrder = { id: p.id, count: 1 };
-        
         document.getElementById('modal-body').innerHTML = `
-            <img src="${p.image}" class="modal-img">
-            <h1>${p.name}</h1>
-            <div class="card-price" style="font-size: 24px; margin-top: 8px;">${p.price} ₽</div>
-            <p class="desc-text">${p.description || 'Изысканный букет для особого случая.'}</p>
-            
-            <div class="order-section">
-                <label>Количество</label>
-                <div class="counter">
-                    <button class="btn btn-sm btn-secondary" onclick="changeCount(-1)">-</button>
-                    <span id="order-count" style="font-weight: 700; min-width: 20px; text-align: center;">1</span>
-                    <button class="btn btn-sm btn-secondary" onclick="changeCount(1, ${p.stock})">+</button>
+            <img src="${p.image}" style="width:100%; height:300px; object-fit:cover; border-radius:20px;">
+            <h1 style="margin-top:15px;">${p.name}</h1>
+            <div class="card-price" style="font-size:24px;">${p.price} ₽</div>
+            <p style="color:var(--text-dim);">${p.description || 'Премиальный букет.'}</p>
+            <div class="order-section" style="background:var(--card-bg); padding:15px; border-radius:15px; border:1px solid var(--border);">
+                <label style="font-size:12px; color:var(--text-dim);">Количество</label>
+                <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px;">
+                    <button class="btn btn-secondary" style="width:40px; padding:10px;" onclick="changeOrderCount(-1)">-</button>
+                    <span id="order-c" style="font-weight:700;">1</span>
+                    <button class="btn btn-secondary" style="width:40px; padding:10px;" onclick="changeOrderCount(1)">+</button>
                 </div>
-
-                <div class="input-group">
-                    <label>Ваше имя</label>
-                    <input type="text" id="cust-name" placeholder="Как к вам обращаться?">
-                </div>
-                <div class="input-group">
-                    <label>Телефон</label>
-                    <input type="tel" id="cust-phone" placeholder="+7 (___) ___-__-__">
-                </div>
-                
-                <button class="btn" onclick="startPayment()">Заказать и оплатить</button>
+                <input type="text" id="c-name" placeholder="Ваше имя" style="margin-bottom:10px;">
+                <input type="tel" id="c-phone" placeholder="Телефон">
+                <button class="btn" style="margin-top:15px;" onclick="startPayment()">Оплатить заказ</button>
             </div>
         `;
         document.getElementById('product-modal').style.display = 'block';
@@ -305,41 +268,52 @@
         tg.BackButton.onClick(closeModal);
     }
 
-    async function startPayment() {
-        const name = document.getElementById('cust-name').value;
-        const phone = document.getElementById('cust-phone').value;
-        if(!name || !phone) { tg.showAlert("Заполните данные."); return; }
+    function changeOrderCount(d) {
+        currentOrder.count = Math.max(1, currentOrder.count + d);
+        document.getElementById('order-c').innerText = currentOrder.count;
+    }
 
-        const orderSection = document.querySelector('.order-section');
-        tg.MainButton.setText("ПОДГОТОВКА...").show();
-        
+    async function startPayment() {
+        const name = document.getElementById('c-name').value;
+        const phone = document.getElementById('c-phone').value;
+        if (!name || !phone) { tg.showAlert("Заполните данные!"); return; }
+
+        const section = document.querySelector('.order-section');
+        tg.MainButton.setText("СОЗДАНИЕ СЧЕТА...").show();
+
         const res = await apiAction('pay', {
             productId: currentOrder.id,
             count: currentOrder.count,
             customerName: name,
-            customerPhone: phone,
-            userId: tg.initDataUnsafe?.user?.id
+            customerPhone: phone
         });
 
         if (res?.paymentUrl) {
-            orderSection.innerHTML = `
+            section.innerHTML = `
                 <div class="pay-loading">
                     <div class="spinner"></div>
                     <h3>Ожидаем оплату...</h3>
-                    <p style="font-size:13px; color:var(--text-dim)">Вы перенаправлены в платежную систему</p>
                     <a href="${res.paymentUrl}" target="_blank" class="retry-link">🔗 Ссылка на оплату</a>
-                    <button class="btn btn-sm btn-secondary" style="margin-bottom:10px" onclick="checkPaymentStatus('${res.orderId}')">Проверить оплату</button>
-                    <button class="btn btn-sm btn-secondary" onclick="closeModal()">Закрыть</button>
+                    <button class="btn btn-secondary" style="font-size:12px;" onclick="checkPaymentStatus('${res.orderId}')">Проверить вручную</button>
                 </div>
             `;
             tg.MainButton.hide();
             if (res.orderId) {
+                clearInterval(paymentCheckInterval);
                 paymentCheckInterval = setInterval(() => checkPaymentStatus(res.orderId), 3000);
             }
             tg.openLink(res.paymentUrl);
-        } else {
-            tg.MainButton.hide();
-            tg.showAlert("Ошибка платежа.");
+        }
+    }
+
+    async function checkPaymentStatus(id) {
+        const res = await apiAction('check_status', { orderId: id });
+        if (res?.status === 'paid') {
+            clearInterval(paymentCheckInterval);
+            tg.HapticFeedback.notificationOccurred('success');
+            tg.showAlert("Оплата принята!");
+            closeModal();
+            apiAction('get_items');
         }
     }
 
@@ -349,23 +323,18 @@
         clearInterval(paymentCheckInterval);
     }
 
-    function changeCount(delta, max) {
-        let newCount = currentOrder.count + delta;
-        if (newCount >= 1 && (!max || newCount <= max)) {
-            currentOrder.count = newCount;
-            document.getElementById('order-count').innerText = newCount;
-        }
-    }
-
-    function switchPage(page, el) {
-        document.getElementById('shop-page').style.display = page === 'shop' ? 'block' : 'none';
-        document.getElementById('admin-page').style.display = page === 'admin' ? 'block' : 'none';
+    function switchPage(p, el) {
+        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+        document.getElementById(p + '-page').classList.add('active');
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         el.classList.add('active');
+        if (p === 'profile') loadOrders();
         tg.HapticFeedback.impactOccurred('light');
     }
 
+    if (tg.initDataUnsafe?.user?.id === MY_ID) document.getElementById('nav-admin').style.display = 'block';
     apiAction('get_items');
 </script>
+
 </body>
 </html>
