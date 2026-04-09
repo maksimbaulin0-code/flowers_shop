@@ -37,33 +37,6 @@
         h2 { font-size: 20px; font-weight: 600; margin-bottom: 20px; color: var(--text-main); }
         .subtitle { color: var(--text-dim); font-size: 13px; margin-bottom: 30px; display: block; }
 
-        .pay-loading {
-            text-align: center;
-            padding: 40px 20px;
-        }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--accent-dim);
-            border-top: 4px solid var(--accent);
-            border-radius: 50%;
-            margin: 0 auto 20px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .retry-link {
-            display: block;
-            margin-top: 15px;
-            color: var(--accent);
-            font-size: 14px;
-            text-decoration: none;
-            border: 1px dashed var(--accent);
-            padding: 10px;
-            border-radius: 10px;
-        }
-        
-        /* Catalog */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .card {
             background: var(--card-bg);
@@ -85,7 +58,6 @@
             border: 1px solid var(--border);
         }
 
-        /* Modal / Product Detail */
         .modal {
             display: none; position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -110,7 +82,6 @@
             border-radius: 12px; width: fit-content; margin-bottom: 20px;
         }
 
-        /* Inputs & Buttons */
         .input-group { margin-bottom: 15px; }
         label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 6px; margin-left: 4px; }
         input, textarea {
@@ -130,7 +101,20 @@
         .btn-secondary { background: var(--accent-dim); color: var(--accent); }
         .btn-sm { padding: 8px 16px; width: auto; font-size: 14px; }
 
-        /* Nav */
+        /* Pay Loading State */
+        .pay-loading { text-align: center; padding: 40px 20px; }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid var(--accent-dim);
+            border-top: 4px solid var(--accent); border-radius: 50%;
+            margin: 0 auto 20px; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .retry-link {
+            display: block; margin: 15px 0; color: var(--accent);
+            font-size: 14px; text-decoration: none; border: 1px dashed var(--accent);
+            padding: 12px; border-radius: 12px;
+        }
+
         .nav {
             position: fixed; bottom: 20px; left: 50%;
             transform: translateX(-50%); width: calc(100% - 40px);
@@ -180,23 +164,22 @@
     tg.expand();
     tg.headerColor = '#000000';
 
-    const API_URL = 'https://scarface.app.n8n.cloud/webhook/9807132c-fdc3-4e47-bb28-144e16feebe1';
+    const API_URL = 'https://scarface.app.n8n.cloud/webhook-test/9807132c-fdc3-4e47-bb28-144e16feebe1';
     const MY_ID = 784237794;
 
     if (tg.initDataUnsafe?.user?.id === MY_ID) document.getElementById('nav-admin').style.display = 'block';
 
     let products = [];
     let currentOrder = { id: null, count: 1 };
+    let paymentCheckInterval;
 
     async function apiAction(action, extraData = {}) {
         try {
-            // Достаем данные пользователя из Telegram
             const user = tg.initDataUnsafe?.user || {};
-            
             const payload = {
                 action: action,
-                username: user.username || 'unknown', // Добавляем юзернейм
-                firstName: user.first_name || 'Guest', // Имя (на случай если нет юзернейма)
+                username: user.username || 'unknown',
+                firstName: user.first_name || 'Guest',
                 ...extraData
             };
     
@@ -220,41 +203,20 @@
                 render();
             }
             return data;
-        } catch (e) {
-            console.error("Ошибка API:", e);
+        } catch (e) { console.error("Ошибка API:", e); }
+    }
+
+    async function checkPaymentStatus(orderId) {
+        const res = await apiAction('check_status', { orderId: orderId });
+        if (res?.status === 'paid') {
+            clearInterval(paymentCheckInterval);
+            tg.HapticFeedback.notificationOccurred('success');
+            tg.showAlert("Оплата успешно подтверждена!");
+            closeModal();
+            apiAction('get_items');
         }
     }
 
-
-    // 1. Меняем значение только в интерфейсе (без запроса к n8n)
-    function changeLocalStock(id, delta, manualValue = null) {
-        const p = products.find(x => x.id === id);
-        const input = document.getElementById(`stock-input-${id}`);
-        
-        if (manualValue !== null) {
-            p.stock = parseInt(manualValue) || 0;
-        } else {
-            p.stock = Math.max(0, p.stock + delta);
-        }
-        
-        input.value = p.stock;
-        tg.HapticFeedback.impactOccurred('light');
-    }
-    
-    // 2. Отправляем итоговое значение в n8n ОДНИМ запросом
-    async function saveStock(id) {
-        const p = products.find(x => x.id === id);
-        tg.MainButton.setText("СОХРАНЕНИЕ...").show();
-        
-        // В extraData теперь передаем итоговое значение (total), а не дельту
-        await apiAction('update_stock', { 
-            id: id, 
-            totalStock: p.stock 
-        });
-        
-        tg.MainButton.hide();
-        tg.showAlert(`Запас ${p.name} обновлен до ${p.stock}`);
-    }
     function render() {
         const container = document.getElementById('catalog-container');
         const adminList = document.getElementById('admin-list');
@@ -270,27 +232,44 @@
             </div>
         `).join('');
 
-    adminList.innerHTML = products.map(p => `
-        <div class="admin-item" style="flex-direction: column; align-items: stretch; gap: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <div style="font-size:14px; font-weight:500">${p.name}</div>
-                    <div style="font-size:12px; color:var(--text-dim)">ID: ${p.id} | ${p.price} ₽</div>
+        adminList.innerHTML = products.map(p => `
+            <div class="admin-item" style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size:14px; font-weight:500">${p.name}</div>
+                        <div style="font-size:12px; color:var(--text-dim)">ID: ${p.id} | ${p.price} ₽</div>
+                    </div>
+                    <div style="display:flex; gap:8px; align-items: center;">
+                        <button class="btn btn-sm btn-secondary" onclick="changeLocalStock(${p.id}, -1)">-</button>
+                        <input type="number" id="stock-input-${p.id}" value="${p.stock}" 
+                            style="width: 60px; padding: 5px; text-align: center; margin: 0 5px;"
+                            onchange="changeLocalStock(${p.id}, 0, this.value)">
+                        <button class="btn btn-sm btn-secondary" onclick="changeLocalStock(${p.id}, 1)">+</button>
+                    </div>
                 </div>
-                <div style="display:flex; gap:8px; align-items: center;">
-                    <button class="btn btn-sm btn-secondary" onclick="changeLocalStock(${p.id}, -1)">-</button>
-                    <input type="number" id="stock-input-${p.id}" value="${p.stock}" 
-                        style="width: 60px; padding: 5px; text-align: center; margin: 0 5px;"
-                        onchange="changeLocalStock(${p.id}, 0, this.value)">
-                    <button class="btn btn-sm btn-secondary" onclick="changeLocalStock(${p.id}, 1)">+</button>
-                </div>
+                <button class="btn btn-sm" style="background: var(--glass); color: var(--accent); border: 1px solid var(--accent-dim);" 
+                    onclick="saveStock(${p.id})">Сохранить остаток</button>
             </div>
-            <button class="btn btn-sm" style="width: 100%; background: var(--glass); color: var(--accent); border: 1px solid var(--accent-dim);" 
-                onclick="saveStock(${p.id})">Сохранить остаток</button>
-        </div>
-    `).join('');
+        `).join('');
+    }
+
+    function changeLocalStock(id, delta, manualValue = null) {
+        const p = products.find(x => x.id === id);
+        const input = document.getElementById(`stock-input-${id}`);
+        if (manualValue !== null) p.stock = parseInt(manualValue) || 0;
+        else p.stock = Math.max(0, p.stock + delta);
+        input.value = p.stock;
+        tg.HapticFeedback.impactOccurred('light');
     }
     
+    async function saveStock(id) {
+        const p = products.find(x => x.id === id);
+        tg.MainButton.setText("СОХРАНЕНИЕ...").show();
+        await apiAction('update_stock', { id: id, totalStock: p.stock });
+        tg.MainButton.hide();
+        tg.showAlert(`Запас ${p.name} обновлен.`);
+    }
+
     function openProduct(id) {
         const p = products.find(x => x.id === id);
         currentOrder = { id: p.id, count: 1 };
@@ -326,32 +305,13 @@
         tg.BackButton.onClick(closeModal);
     }
 
-    function changeCount(delta, max) {
-        let newCount = currentOrder.count + delta;
-        if (newCount >= 1 && (!max || newCount <= max)) {
-            currentOrder.count = newCount;
-            document.getElementById('order-count').innerText = newCount;
-            tg.HapticFeedback.impactOccurred('light');
-        }
-    }
-
-    function closeModal() {
-        document.getElementById('product-modal').style.display = 'none';
-        tg.BackButton.hide();
-    }
-
     async function startPayment() {
         const name = document.getElementById('cust-name').value;
         const phone = document.getElementById('cust-phone').value;
-        
-        if(!name || !phone) {
-            tg.showAlert("Пожалуйста, заполните имя и телефон для связи.");
-            return;
-        }
-    
-        // Сохраняем ссылку на контейнер формы
+        if(!name || !phone) { tg.showAlert("Заполните данные."); return; }
+
         const orderSection = document.querySelector('.order-section');
-        tg.MainButton.setText("ПОДГОТОВКА ОПЛАТЫ...").show();
+        tg.MainButton.setText("ПОДГОТОВКА...").show();
         
         const res = await apiAction('pay', {
             productId: currentOrder.id,
@@ -360,29 +320,40 @@
             customerPhone: phone,
             userId: tg.initDataUnsafe?.user?.id
         });
-    
+
         if (res?.paymentUrl) {
-            // Меняем интерфейс на "Ожидание оплаты"
             orderSection.innerHTML = `
                 <div class="pay-loading">
                     <div class="spinner"></div>
-                    <h3 style="margin:0">Ожидаем оплату...</h3>
-                    <p style="font-size:13px; color:var(--text-dim)">Вы были перенаправлены в платежную систему</p>
-                    <a href="${res.paymentUrl}" target="_blank" class="retry-link">
-                        🔗 Ссылка на оплату (если не открылась)
-                    </a>
-                    <button class="btn btn-secondary" style="margin-top:20px" onclick="closeModal()">
-                        Вернуться к покупкам
-                    </button>
+                    <h3>Ожидаем оплату...</h3>
+                    <p style="font-size:13px; color:var(--text-dim)">Вы перенаправлены в платежную систему</p>
+                    <a href="${res.paymentUrl}" target="_blank" class="retry-link">🔗 Ссылка на оплату</a>
+                    <button class="btn btn-sm btn-secondary" style="margin-bottom:10px" onclick="checkPaymentStatus('${res.orderId}')">Проверить оплату</button>
+                    <button class="btn btn-sm btn-secondary" onclick="closeModal()">Закрыть</button>
                 </div>
             `;
-            
             tg.MainButton.hide();
-            // Пробуем открыть ссылку автоматически
+            if (res.orderId) {
+                paymentCheckInterval = setInterval(() => checkPaymentStatus(res.orderId), 3000);
+            }
             tg.openLink(res.paymentUrl);
         } else {
             tg.MainButton.hide();
-            tg.showAlert("Ошибка при создании платежа. Попробуйте позже.");
+            tg.showAlert("Ошибка платежа.");
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('product-modal').style.display = 'none';
+        tg.BackButton.hide();
+        clearInterval(paymentCheckInterval);
+    }
+
+    function changeCount(delta, max) {
+        let newCount = currentOrder.count + delta;
+        if (newCount >= 1 && (!max || newCount <= max)) {
+            currentOrder.count = newCount;
+            document.getElementById('order-count').innerText = newCount;
         }
     }
 
@@ -392,13 +363,6 @@
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         el.classList.add('active');
         tg.HapticFeedback.impactOccurred('light');
-    }
-
-    async function updateStock(id, delta) {
-        await apiAction('update_stock', { id, delta });
-        const p = products.find(x => x.id === id);
-        if (p) p.stock = Math.max(0, p.stock + delta);
-        render();
     }
 
     apiAction('get_items');
