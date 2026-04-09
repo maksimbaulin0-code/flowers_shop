@@ -198,18 +198,25 @@
             </div>
         `).join('');
 
-        adminList.innerHTML = products.map(p => `
-            <div class="admin-item">
+    adminList.innerHTML = products.map(p => `
+        <div class="admin-item" style="flex-direction: column; align-items: stretch; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <div style="font-size:14px; font-weight:500">${p.name}</div>
-                    <div style="font-size:12px; color:var(--text-dim)">${p.stock} шт. | ${p.price} ₽</div>
+                    <div style="font-size:12px; color:var(--text-dim)">ID: ${p.id} | ${p.price} ₽</div>
                 </div>
-                <div style="display:flex; gap:8px">
-                    <button class="btn btn-sm btn-secondary" onclick="updateStock(${p.id}, -1)">-</button>
-                    <button class="btn btn-sm btn-secondary" onclick="updateStock(${p.id}, 1)">+</button>
+                <div style="display:flex; gap:8px; align-items: center;">
+                    <button class="btn btn-sm btn-secondary" onclick="changeLocalStock(${p.id}, -1)">-</button>
+                    <input type="number" id="stock-input-${p.id}" value="${p.stock}" 
+                        style="width: 60px; padding: 5px; text-align: center; margin: 0 5px;"
+                        onchange="changeLocalStock(${p.id}, 0, this.value)">
+                    <button class="btn btn-sm btn-secondary" onclick="changeLocalStock(${p.id}, 1)">+</button>
                 </div>
             </div>
-        `).join('');
+            <button class="btn btn-sm" style="width: 100%; background: var(--glass); color: var(--accent); border: 1px solid var(--accent-dim);" 
+                onclick="saveStock(${p.id})">Сохранить остаток</button>
+        </div>
+    `).join('');
     }
 
     function openProduct(id) {
