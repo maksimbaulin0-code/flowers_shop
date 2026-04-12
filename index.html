@@ -956,7 +956,13 @@
                 body: JSON.stringify(payload)
             });
             const data = await res.json();
-            if (action === 'get_items') { products = data; renderCatalog(); renderAdmin(); }
+            if (action === 'get_items') {
+                products = data.map(item => {
+                    const key = Object.keys(item)[0];
+                    return typeof item[key] === 'object' ? item[key] : item;
+                });
+                renderCatalog(); renderAdmin();
+            }
             return data;
         } catch(e) { console.error(e); }
     }
