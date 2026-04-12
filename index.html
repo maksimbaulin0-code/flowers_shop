@@ -27,16 +27,16 @@
             --glass: rgba(255, 255, 255, 0.03);
             --glass-heavy: rgba(255, 255, 255, 0.05);
             --gradient-card: linear-gradient(135deg, rgba(212, 160, 160, 0.05) 0%, transparent 60%);
-            --gradient-hero: linear-gradient(180deg, rgba(212, 160, 160, 0.08) 0%, transparent 50%);
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
             --shadow-md: 0 8px 32px rgba(0,0,0,0.4);
             --shadow-lg: 0 16px 48px rgba(0,0,0,0.5);
             --status-paid: #7ec8a0;
             --status-pending: #e0c36a;
+            --danger: #d46a6a;
+            --danger-glow: rgba(212, 106, 106, 0.15);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-
         html { scroll-behavior: smooth; }
 
         body {
@@ -51,816 +51,410 @@
         body::before {
             content: '';
             position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
             background: radial-gradient(ellipse at 30% 20%, rgba(212, 160, 160, 0.04) 0%, transparent 50%),
                         radial-gradient(ellipse at 70% 80%, rgba(196, 162, 101, 0.03) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
+            pointer-events: none; z-index: 0;
         }
 
         #app {
-            position: relative;
-            z-index: 1;
+            position: relative; z-index: 1;
             padding: 0 20px 120px;
-            max-width: 480px;
-            margin: 0 auto;
+            max-width: 480px; margin: 0 auto;
         }
 
         .page { display: none; animation: fadeIn 0.4s ease; }
         .page.active { display: block; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes floatUp { 0% { opacity: 0; transform: translateY(20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes cartBounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes floatUp {
-            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        @keyframes glowPulse {
-            0%, 100% { box-shadow: 0 0 20px rgba(212, 160, 160, 0.1); }
-            50% { box-shadow: 0 0 40px rgba(212, 160, 160, 0.2); }
-        }
-
-        .brand {
-            padding: 40px 0 8px;
-            text-align: center;
-        }
-
+        .brand { padding: 40px 0 8px; text-align: center; }
         .brand-logo {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 36px;
-            font-weight: 300;
-            letter-spacing: 8px;
-            text-transform: uppercase;
-            color: var(--text-main);
+            font-size: 36px; font-weight: 300;
+            letter-spacing: 8px; text-transform: uppercase;
             background: linear-gradient(135deg, var(--text-main) 0%, var(--accent) 50%, var(--gold) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-
         .brand-sub {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 13px;
-            letter-spacing: 6px;
-            text-transform: uppercase;
-            color: var(--text-dim);
-            margin-top: 4px;
+            font-size: 13px; letter-spacing: 6px;
+            text-transform: uppercase; color: var(--text-dim); margin-top: 4px;
         }
-
-        .brand-line {
-            width: 40px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
-            margin: 16px auto 0;
-        }
+        .brand-line { width: 40px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); margin: 16px auto 0; }
 
         .section-header {
-            display: flex;
-            align-items: center;
+            display: flex; align-items: center;
             justify-content: space-between;
-            margin-bottom: 20px;
-            padding-top: 8px;
+            margin-bottom: 20px; padding-top: 8px;
         }
-
         .section-title {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 28px;
-            font-weight: 400;
-            letter-spacing: 1px;
-            color: var(--text-main);
+            font-size: 28px; font-weight: 400; letter-spacing: 1px;
         }
-
         .section-badge {
-            font-size: 11px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: var(--accent);
-            padding: 4px 12px;
+            font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+            color: var(--accent); padding: 4px 12px;
             border: 1px solid var(--accent-glow-strong);
-            border-radius: 20px;
-            background: var(--accent-glow);
+            border-radius: 20px; background: var(--accent-glow);
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-        }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
         .card {
             background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            overflow: hidden;
-            position: relative;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: 24px;
+            overflow: hidden; position: relative;
             transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            cursor: pointer;
         }
-
         .card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: var(--gradient-card);
-            z-index: 1;
-            pointer-events: none;
-            border-radius: 24px;
+            content: ''; position: absolute; inset: 0;
+            background: var(--gradient-card); z-index: 1;
+            pointer-events: none; border-radius: 24px;
         }
+        .card:active { transform: scale(0.96); border-color: var(--border-light); }
 
-        .card:active {
-            transform: scale(0.96);
-            border-color: var(--border-light);
-        }
-
-        .card-img-wrap {
-            position: relative;
-            overflow: hidden;
-        }
-
+        .card-img-wrap { position: relative; overflow: hidden; }
         .card-img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
+            width: 100%; height: 200px; object-fit: cover;
             transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
-
-        .card:hover .card-img,
-        .card:active .card-img {
-            transform: scale(1.05);
-        }
-
+        .card:active .card-img { transform: scale(1.05); }
         .card-img-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
-            background: linear-gradient(transparent, rgba(12, 11, 13, 0.8));
-            z-index: 2;
+            position: absolute; bottom: 0; left: 0; right: 0; height: 80px;
+            background: linear-gradient(transparent, rgba(12, 11, 13, 0.8)); z-index: 2;
         }
 
-        .card-content {
-            position: relative;
-            z-index: 2;
-            padding: 16px 16px 18px;
-        }
-
+        .card-content { position: relative; z-index: 2; padding: 16px 16px 18px; }
         .card-name {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 16px;
-            font-weight: 500;
-            color: var(--text-main);
-            margin-bottom: 6px;
-            line-height: 1.3;
+            font-size: 16px; font-weight: 500; margin-bottom: 6px; line-height: 1.3;
         }
+        .card-price { font-size: 17px; font-weight: 600; color: var(--accent-bright); letter-spacing: 0.5px; }
+        .card-price span { font-size: 13px; font-weight: 400; color: var(--text-dim); }
 
-        .card-price {
-            font-size: 17px;
-            font-weight: 600;
+        .card-add-btn {
+            position: absolute; bottom: 16px; right: 16px; z-index: 3;
+            width: 38px; height: 38px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--gold));
+            border: none; color: #0c0b0d; font-size: 20px; font-weight: 300;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(212, 160, 160, 0.3);
+        }
+        .card-add-btn:active { transform: scale(0.9); }
+        .card-add-btn.in-cart {
+            background: var(--accent-glow);
             color: var(--accent-bright);
-            letter-spacing: 0.5px;
+            box-shadow: none;
+            border: 1px solid var(--accent-glow-strong);
         }
 
-        .card-price span {
-            font-size: 13px;
-            font-weight: 400;
-            color: var(--text-dim);
+        .cart-item {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: 20px;
+            padding: 16px; margin-bottom: 12px;
+            display: flex; gap: 14px; align-items: center;
+            position: relative; overflow: hidden;
+            animation: slideIn 0.3s ease;
+        }
+        .cart-item::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-glow-strong), transparent);
+        }
+        .cart-item-img {
+            width: 70px; height: 70px; border-radius: 14px;
+            object-fit: cover; flex-shrink: 0;
+        }
+        .cart-item-info { flex: 1; min-width: 0; }
+        .cart-item-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 17px; font-weight: 500;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .cart-item-price { font-size: 14px; color: var(--accent-bright); font-weight: 600; margin-top: 2px; }
+        .cart-item-controls {
+            display: flex; align-items: center; gap: 0;
+            background: var(--glass-heavy); border-radius: 12px;
+            border: 1px solid var(--border); padding: 2px; margin-top: 8px;
+        }
+        .cart-ctrl-btn {
+            width: 32px; height: 32px; display: flex;
+            align-items: center; justify-content: center;
+            background: transparent; border: none;
+            color: var(--text-main); font-size: 16px;
+            border-radius: 10px; cursor: pointer; transition: all 0.2s;
+        }
+        .cart-ctrl-btn:active { background: var(--accent-glow); color: var(--accent-bright); }
+        .cart-ctrl-btn.remove:active { background: var(--danger-glow); color: var(--danger); }
+        .cart-ctrl-val {
+            width: 32px; text-align: center;
+            font-size: 14px; font-weight: 600; color: var(--text-main);
+        }
+
+        .cart-summary {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 24px; padding: 24px;
+            margin-top: 20px; position: relative; overflow: hidden;
+        }
+        .cart-summary::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-glow-strong), transparent);
+        }
+        .cart-total-row {
+            display: flex; justify-content: space-between;
+            align-items: center; padding: 8px 0;
+        }
+        .cart-total-label { font-size: 14px; color: var(--text-dim); }
+        .cart-total-value { font-size: 14px; color: var(--text-main); font-weight: 500; }
+        .cart-total-row.grand {
+            border-top: 1px solid var(--border);
+            margin-top: 8px; padding-top: 16px;
+        }
+        .cart-total-row.grand .cart-total-label {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px; font-weight: 500; color: var(--text-main);
+        }
+        .cart-total-row.grand .cart-total-value {
+            font-size: 24px; font-weight: 700; color: var(--accent-bright);
+            font-family: 'Cormorant Garamond', serif;
         }
 
         .order-card {
             background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 14px;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: 20px;
+            padding: 20px; margin-bottom: 14px;
+            position: relative; overflow: hidden;
+            cursor: pointer; transition: all 0.3s ease;
         }
-
         .order-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
             background: linear-gradient(90deg, transparent, var(--accent-glow-strong), transparent);
         }
-
-        .order-card:active {
-            transform: scale(0.98);
-        }
-
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .order-id {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .order-date {
-            font-size: 12px;
-            color: var(--text-dim);
-            margin-top: 2px;
-        }
-
+        .order-card:active { transform: scale(0.98); }
+        .order-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .order-id { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; }
+        .order-date { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
         .order-status {
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            padding: 5px 12px;
-            border-radius: 20px;
+            font-size: 10px; font-weight: 600; letter-spacing: 1px;
+            text-transform: uppercase; padding: 5px 12px; border-radius: 20px;
         }
-
-        .status-paid {
-            background: rgba(126, 200, 160, 0.12);
-            color: var(--status-paid);
-            border: 1px solid rgba(126, 200, 160, 0.2);
-        }
-
-        .status-pending {
-            background: rgba(224, 195, 106, 0.12);
-            color: var(--status-pending);
-            border: 1px solid rgba(224, 195, 106, 0.2);
-        }
-
-        .order-amount {
-            color: var(--accent-bright);
-            font-weight: 600;
-            font-size: 20px;
-            margin-top: 12px;
-            font-family: 'Cormorant Garamond', serif;
-        }
-
-        .order-details {
-            display: none;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid var(--border);
-            font-size: 13px;
-            color: var(--text-mid);
-        }
-
+        .status-paid { background: rgba(126, 200, 160, 0.12); color: var(--status-paid); border: 1px solid rgba(126, 200, 160, 0.2); }
+        .status-pending { background: rgba(224, 195, 106, 0.12); color: var(--status-pending); border: 1px solid rgba(224, 195, 106, 0.2); }
+        .order-amount { color: var(--accent-bright); font-weight: 600; font-size: 20px; margin-top: 12px; font-family: 'Cormorant Garamond', serif; }
+        .order-details { display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-mid); }
         .order-card.open .order-details { display: block; }
-
-        .order-detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-        }
-
-        .order-detail-label {
-            color: var(--text-dim);
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .order-detail-value {
-            color: var(--text-main);
-            font-weight: 500;
-        }
+        .order-detail-row { display: flex; justify-content: space-between; padding: 6px 0; }
+        .order-detail-label { color: var(--text-dim); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .order-detail-value { color: var(--text-main); font-weight: 500; }
 
         .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg);
-            z-index: 1000;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: var(--bg);
+            z-index: 1000; overflow-y: auto; -webkit-overflow-scrolling: touch;
         }
-
-        .modal.show {
-            display: block;
-            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .modal-content {
-            padding: 0 20px 40px;
-            max-width: 480px;
-            margin: 0 auto;
-        }
-
-        .modal-hero {
-            position: relative;
-            width: calc(100% + 40px);
-            margin: 0 -20px;
-            height: 380px;
-            overflow: hidden;
-        }
-
-        .modal-hero img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .modal-hero-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 150px;
-            background: linear-gradient(transparent, var(--bg));
-        }
-
+        .modal.show { display: block; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal-content { padding: 0 20px 40px; max-width: 480px; margin: 0 auto; }
+        .modal-hero { position: relative; width: calc(100% + 40px); margin: 0 -20px; height: 380px; overflow: hidden; }
+        .modal-hero img { width: 100%; height: 100%; object-fit: cover; }
+        .modal-hero-overlay { position: absolute; bottom: 0; left: 0; right: 0; height: 150px; background: linear-gradient(transparent, var(--bg)); }
         .modal-hero-badge {
-            position: absolute;
-            top: 20px;
-            left: 20px;
+            position: absolute; top: 20px; left: 20px;
             background: rgba(12, 11, 13, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 8px 16px;
-            border-radius: 30px;
-            border: 1px solid var(--border);
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-mid);
-            letter-spacing: 1px;
-            text-transform: uppercase;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 8px 16px; border-radius: 30px; border: 1px solid var(--border);
+            font-size: 12px; font-weight: 500; color: var(--text-mid);
+            letter-spacing: 1px; text-transform: uppercase;
         }
-
-        .modal-body {
-            position: relative;
-            margin-top: -40px;
-        }
-
-        .modal-name {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 32px;
-            font-weight: 400;
-            line-height: 1.2;
-            margin-bottom: 8px;
-        }
-
-        .modal-price {
-            font-size: 28px;
-            font-weight: 600;
-            color: var(--accent-bright);
-            margin-bottom: 16px;
-        }
-
-        .modal-desc {
-            font-size: 14px;
-            color: var(--text-mid);
-            line-height: 1.7;
-            margin-bottom: 24px;
-        }
+        .modal-body { position: relative; margin-top: -40px; }
+        .modal-name { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 400; line-height: 1.2; margin-bottom: 8px; }
+        .modal-price { font-size: 28px; font-weight: 600; color: var(--accent-bright); margin-bottom: 16px; }
+        .modal-desc { font-size: 14px; color: var(--text-mid); line-height: 1.7; margin-bottom: 24px; }
 
         .order-section {
-            background: var(--bg-elevated);
-            padding: 24px;
-            border-radius: 24px;
-            border: 1px solid var(--border);
-            position: relative;
-            overflow: hidden;
+            background: var(--bg-elevated); padding: 24px;
+            border-radius: 24px; border: 1px solid var(--border);
+            position: relative; overflow: hidden;
         }
-
         .order-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
             background: linear-gradient(90deg, transparent, var(--accent-glow-strong), transparent);
         }
-
         .order-section-title {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 18px;
-            font-weight: 500;
-            margin-bottom: 20px;
-            color: var(--text-main);
+            font-size: 18px; font-weight: 500; margin-bottom: 20px;
         }
 
         .count-selector {
-            display: flex;
-            align-items: center;
-            gap: 0;
-            background: var(--glass-heavy);
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            padding: 4px;
-            margin-bottom: 20px;
+            display: flex; align-items: center; gap: 0;
+            background: var(--glass-heavy); border-radius: 16px;
+            border: 1px solid var(--border); padding: 4px; margin-bottom: 20px;
         }
-
         .count-btn {
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--glass-heavy);
-            border: none;
-            color: var(--text-main);
-            font-size: 18px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 300;
+            width: 44px; height: 44px; display: flex;
+            align-items: center; justify-content: center;
+            background: var(--glass-heavy); border: none;
+            color: var(--text-main); font-size: 18px;
+            border-radius: 12px; cursor: pointer; transition: all 0.2s; font-weight: 300;
         }
-
-        .count-btn:active {
-            background: var(--accent-glow);
-            color: var(--accent-bright);
-        }
-
-        .count-value {
-            flex: 1;
-            text-align: center;
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--text-main);
-            font-family: 'Cormorant Garamond', serif;
-        }
+        .count-btn:active { background: var(--accent-glow); color: var(--accent-bright); }
+        .count-value { flex: 1; text-align: center; font-size: 20px; font-weight: 600; font-family: 'Cormorant Garamond', serif; }
 
         .input-field {
-            width: 100%;
-            background: var(--glass-heavy);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 16px 18px;
-            border-radius: 16px;
-            outline: none;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            margin-bottom: 12px;
-            transition: border-color 0.3s;
+            width: 100%; background: var(--glass-heavy);
+            border: 1px solid var(--border); color: var(--text-main);
+            padding: 16px 18px; border-radius: 16px; outline: none;
+            font-family: 'Inter', sans-serif; font-size: 14px;
+            margin-bottom: 12px; transition: border-color 0.3s;
         }
-
-        .input-field:focus {
-            border-color: var(--accent-glow-strong);
-            background: rgba(212, 160, 160, 0.03);
-        }
-
-        .input-field::placeholder {
-            color: var(--text-dim);
-        }
+        .input-field:focus { border-color: var(--accent-glow-strong); background: rgba(212, 160, 160, 0.03); }
+        .input-field::placeholder { color: var(--text-dim); }
 
         .btn {
-            display: block;
-            width: 100%;
-            padding: 18px;
-            border: none;
-            border-radius: 18px;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            display: block; width: 100%; padding: 18px; border: none;
+            border-radius: 18px; font-family: 'Inter', sans-serif;
+            font-size: 14px; font-weight: 600; letter-spacing: 1px;
+            text-transform: uppercase; cursor: pointer;
+            transition: all 0.3s ease; position: relative; overflow: hidden;
         }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent) 0%, var(--gold) 100%);
-            color: #0c0b0d;
-        }
-
-        .btn-primary:active {
-            transform: scale(0.97);
-        }
-
-        .btn-primary::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .btn-primary:hover::after {
-            opacity: 1;
-        }
-
-        .btn-ghost {
-            background: var(--glass-heavy);
-            color: var(--text-main);
-            border: 1px solid var(--border);
-        }
-
-        .btn-ghost:active {
-            background: var(--accent-glow);
-            border-color: var(--accent-glow-strong);
-        }
-
+        .btn-primary { background: linear-gradient(135deg, var(--accent) 0%, var(--gold) 100%); color: #0c0b0d; }
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-primary:disabled { opacity: 0.4; pointer-events: none; }
+        .btn-ghost { background: var(--glass-heavy); color: var(--text-main); border: 1px solid var(--border); }
+        .btn-ghost:active { background: var(--accent-glow); border-color: var(--accent-glow-strong); }
         .btn-ghost-sm {
-            background: var(--glass-heavy);
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 8px 14px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
+            background: var(--glass-heavy); color: var(--text-main);
+            border: 1px solid var(--border); padding: 8px 14px;
+            border-radius: 12px; font-size: 12px; font-weight: 500;
+            cursor: pointer; transition: all 0.2s;
         }
+        .btn-ghost-sm:active { background: var(--accent-glow); }
 
-        .btn-ghost-sm:active {
-            background: var(--accent-glow);
-        }
-
-        .pay-loading {
-            text-align: center;
-            padding: 40px 10px;
-        }
-
-        .spinner-wrap {
-            position: relative;
-            width: 56px;
-            height: 56px;
-            margin: 0 auto 24px;
-        }
-
-        .spinner {
-            width: 56px;
-            height: 56px;
-            border: 2px solid var(--border);
-            border-top: 2px solid var(--accent);
-            border-radius: 50%;
-            animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-        }
-
-        .spinner-glow {
-            position: absolute;
-            inset: -8px;
-            border-radius: 50%;
-            background: var(--accent-glow);
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        .pay-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 22px;
-            font-weight: 400;
-            margin-bottom: 8px;
-        }
-
-        .pay-subtitle {
-            font-size: 13px;
-            color: var(--text-dim);
-            margin-bottom: 20px;
-        }
-
+        .pay-loading { text-align: center; padding: 40px 10px; }
+        .spinner-wrap { position: relative; width: 56px; height: 56px; margin: 0 auto 24px; }
+        .spinner { width: 56px; height: 56px; border: 2px solid var(--border); border-top: 2px solid var(--accent); border-radius: 50%; animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite; }
+        .spinner-glow { position: absolute; inset: -8px; border-radius: 50%; background: var(--accent-glow); animation: pulse 2s ease-in-out infinite; }
+        .pay-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; margin-bottom: 8px; }
+        .pay-subtitle { font-size: 13px; color: var(--text-dim); margin-bottom: 20px; }
         .pay-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--accent-bright);
-            font-size: 14px;
-            text-decoration: none;
-            padding: 14px 24px;
-            border: 1px solid var(--accent-glow-strong);
-            border-radius: 16px;
-            background: var(--accent-glow);
-            margin-bottom: 12px;
-            transition: all 0.3s;
+            display: inline-flex; align-items: center; gap: 8px;
+            color: var(--accent-bright); font-size: 14px; text-decoration: none;
+            padding: 14px 24px; border: 1px solid var(--accent-glow-strong);
+            border-radius: 16px; background: var(--accent-glow);
+            margin-bottom: 12px; transition: all 0.3s;
         }
-
-        .pay-link:active {
-            transform: scale(0.97);
-            background: var(--accent-glow-strong);
-        }
+        .pay-link:active { transform: scale(0.97); background: var(--accent-glow-strong); }
 
         .nav {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px);
-            max-width: 440px;
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: calc(100% - 40px); max-width: 440px;
             background: rgba(14, 13, 16, 0.85);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid var(--border);
-            border-radius: 28px;
-            display: flex;
-            padding: 6px;
-            z-index: 100;
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border); border-radius: 28px;
+            display: flex; padding: 6px; z-index: 100;
             box-shadow: var(--shadow-lg);
         }
-
         .nav-btn {
-            flex: 1;
-            padding: 14px 8px;
-            text-align: center;
-            font-size: 11px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            color: var(--text-dim);
-            border-radius: 22px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
+            flex: 1; padding: 14px 8px; text-align: center;
+            font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
+            text-transform: uppercase; color: var(--text-dim);
+            border-radius: 22px; transition: all 0.3s ease;
+            cursor: pointer; position: relative;
         }
-
-        .nav-btn.active {
-            background: var(--accent-glow);
-            color: var(--accent-bright);
-        }
-
+        .nav-btn.active { background: var(--accent-glow); color: var(--accent-bright); }
         .nav-btn.active::before {
-            content: '';
-            position: absolute;
-            top: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: var(--accent-bright);
+            content: ''; position: absolute; top: 8px; left: 50%;
+            transform: translateX(-50%); width: 4px; height: 4px;
+            border-radius: 50%; background: var(--accent-bright);
         }
+        .nav-btn-icon { display: block; font-size: 16px; margin-bottom: 2px; }
+        .cart-badge {
+            position: absolute; top: 4px; right: 50%; transform: translateX(16px);
+            min-width: 18px; height: 18px; border-radius: 9px;
+            background: linear-gradient(135deg, var(--accent), var(--gold));
+            color: #0c0b0d; font-size: 10px; font-weight: 700;
+            display: none; align-items: center; justify-content: center;
+            padding: 0 4px; line-height: 1;
+        }
+        .cart-badge.visible { display: flex; animation: cartBounce 0.3s ease; }
 
         .admin-panel {
-            background: var(--bg-elevated);
-            padding: 24px;
-            border-radius: 24px;
-            border: 1px solid var(--border);
-            margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
+            background: var(--bg-elevated); padding: 24px;
+            border-radius: 24px; border: 1px solid var(--border);
+            margin-bottom: 20px; position: relative; overflow: hidden;
         }
-
         .admin-panel::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
             background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
         }
-
-        .admin-panel-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 18px;
-            font-weight: 500;
-            margin-bottom: 20px;
-            color: var(--gold);
-        }
-
+        .admin-panel-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 500; margin-bottom: 20px; color: var(--gold); }
         .admin-item {
             background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 18px;
-            margin-bottom: 12px;
-            position: relative;
-            overflow: hidden;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: 20px;
+            padding: 18px; margin-bottom: 12px;
+            position: relative; overflow: hidden;
         }
-
         .admin-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
             background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
         }
-
-        .admin-item-name {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 18px;
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-
-        .admin-item-stock {
-            font-size: 12px;
-            color: var(--text-dim);
-            margin-bottom: 12px;
-        }
-
+        .admin-item-name { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 500; margin-bottom: 8px; }
+        .admin-item-stock { font-size: 12px; color: var(--text-dim); margin-bottom: 12px; }
         .admin-stock-controls {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            background: var(--glass-heavy);
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            padding: 4px;
+            display: flex; align-items: center; gap: 4px;
+            background: var(--glass-heavy); border-radius: 14px;
+            border: 1px solid var(--border); padding: 4px;
         }
-
         .admin-stock-input {
-            width: 48px;
-            text-align: center;
-            background: transparent;
-            border: none;
-            color: var(--text-main);
-            font-size: 14px;
-            font-weight: 600;
-            padding: 8px 0;
-            outline: none;
+            width: 48px; text-align: center; background: transparent;
+            border: none; color: var(--text-main); font-size: 14px;
+            font-weight: 600; padding: 8px 0; outline: none;
             font-family: 'Inter', sans-serif;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.3;
-        }
-
-        .empty-state-text {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 20px;
-            color: var(--text-dim);
-            font-weight: 400;
-        }
+        .empty-state { text-align: center; padding: 60px 20px; }
+        .empty-state-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+        .empty-state-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--text-dim); font-weight: 400; }
 
         .loading-skeleton {
             background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--glass-heavy) 50%, var(--bg-elevated) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 20px;
-            height: 260px;
-        }
-
-        .divider {
-            width: 100%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--border-light), transparent);
-            margin: 24px 0;
+            background-size: 200% 100%; animation: shimmer 1.5s infinite;
+            border-radius: 20px; height: 260px;
         }
 
         .close-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            position: absolute; top: 20px; right: 20px;
+            width: 40px; height: 40px; border-radius: 50%;
             background: rgba(12, 11, 13, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10;
-            transition: all 0.2s;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border); color: var(--text-main);
+            font-size: 18px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 10; transition: all 0.2s;
         }
+        .close-btn:active { background: rgba(212, 160, 160, 0.15); }
 
-        .close-btn:active {
-            background: rgba(212, 160, 160, 0.15);
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--bg-elevated); border: 1px solid var(--accent-glow-strong);
+            border-radius: 16px; padding: 12px 24px;
+            font-size: 13px; color: var(--accent-bright);
+            z-index: 2000; backdrop-filter: blur(20px);
+            animation: slideUp 0.3s ease;
+            max-width: 300px; text-align: center;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -878,6 +472,17 @@
             <div class="section-badge" id="items-count"></div>
         </div>
         <div class="grid" id="catalog-container"></div>
+    </div>
+
+    <div id="cart-page" class="page">
+        <div class="brand">
+            <div class="brand-logo">Корзина</div>
+            <div class="brand-sub">Ваш выбор</div>
+            <div class="brand-line"></div>
+        </div>
+        <div id="cart-container"></div>
+        <div id="cart-summary-section" style="display:none;"></div>
+        <div id="cart-checkout-section" style="display:none;"></div>
     </div>
 
     <div id="profile-page" class="page">
@@ -911,15 +516,21 @@
     <div class="modal-content" id="modal-body"></div>
 </div>
 
+<div id="toast-container"></div>
+
 <nav class="nav">
     <div class="nav-btn active" onclick="switchPage('shop', this)">
-        <span>&#9733;</span> Каталог
+        <span class="nav-btn-icon">&#10047;</span> Каталог
+    </div>
+    <div class="nav-btn" onclick="switchPage('cart', this)">
+        <span class="nav-btn-icon">&#128722;</span> Корзина
+        <span class="cart-badge" id="cart-badge">0</span>
     </div>
     <div class="nav-btn" onclick="switchPage('profile', this)">
-        <span>&#9830;</span> Профиль
+        <span class="nav-btn-icon">&#9830;</span> Профиль
     </div>
     <div class="nav-btn" id="nav-admin" style="display: none;" onclick="switchPage('admin', this)">
-        <span>&#9881;</span> Админ
+        <span class="nav-btn-icon">&#9881;</span> Админ
     </div>
 </nav>
 
@@ -929,8 +540,65 @@
     const MY_ID = 784237794;
 
     let products = [];
+    let cart = [];
     let paymentCheckInterval;
-    let currentOrder = { id: null, count: 1 };
+    let currentModalCount = 1;
+
+    function showToast(msg) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = msg;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+    }
+
+    function updateCartBadge() {
+        const badge = document.getElementById('cart-badge');
+        const total = cart.reduce((s, c) => s + c.count, 0);
+        badge.textContent = total;
+        badge.className = total > 0 ? 'cart-badge visible' : 'cart-badge';
+    }
+
+    function addToCart(productId, count) {
+        const existing = cart.find(c => String(c.id) === String(productId));
+        if (existing) {
+            existing.count += count;
+        } else {
+            cart.push({ id: String(productId), count });
+        }
+        updateCartBadge();
+        renderCatalog();
+        const p = products.find(x => String(x.id) === String(productId));
+        showToast(`${p ? p.name : 'Товар'} добавлен в корзину`);
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function removeFromCart(productId) {
+        cart = cart.filter(c => String(c.id) !== String(productId));
+        updateCartBadge();
+        renderCart();
+        renderCatalog();
+    }
+
+    function updateCartCount(productId, delta) {
+        const item = cart.find(c => String(c.id) === String(productId));
+        if (!item) return;
+        item.count = Math.max(1, item.count + delta);
+        updateCartBadge();
+        renderCart();
+    }
+
+    function getCartTotal() {
+        return cart.reduce((sum, c) => {
+            const p = products.find(x => String(x.id) === String(c.id));
+            return sum + (p ? parseInt(p.price) * c.count : 0);
+        }, 0);
+    }
+
+    function isInCart(productId) {
+        return cart.some(c => String(c.id) === String(productId));
+    }
 
     async function apiAction(action, extraData = {}) {
         const user = tg.initDataUnsafe?.user || {};
@@ -959,7 +627,11 @@
             if (action === 'get_items') {
                 products = data.map(item => {
                     const key = Object.keys(item)[0];
-                    return typeof item[key] === 'object' ? item[key] : item;
+                    const val = item[key];
+                    if (typeof val === 'object' && val !== null) {
+                        return { ...val, id: String(val.id) };
+                    }
+                    return { ...item, id: String(item.id) };
                 });
                 renderCatalog(); renderAdmin();
             }
@@ -973,17 +645,83 @@
         if (countEl) countEl.textContent = products.length + ' штук';
 
         container.innerHTML = products.map((p, i) => `
-            <div class="card" onclick="openProduct(${p.id})" style="animation: floatUp 0.5s ease ${i * 0.08}s both;">
-                <div class="card-img-wrap">
+            <div class="card" style="animation: floatUp 0.5s ease ${i * 0.08}s both;">
+                <div class="card-img-wrap" onclick="openProduct('${p.id}')">
                     <img src="${p.image}" class="card-img" loading="lazy">
                     <div class="card-img-overlay"></div>
                 </div>
-                <div class="card-content">
+                <div class="card-content" onclick="openProduct('${p.id}')">
                     <div class="card-name">${p.name}</div>
                     <div class="card-price">${p.price} <span>₽</span></div>
                 </div>
+                <button class="card-add-btn ${isInCart(p.id) ? 'in-cart' : ''}" onclick="event.stopPropagation(); addToCart('${p.id}', 1)">${isInCart(p.id) ? '&#10003;' : '+'}</button>
             </div>
         `).join('');
+    }
+
+    function renderCart() {
+        const container = document.getElementById('cart-container');
+        const summarySection = document.getElementById('cart-summary-section');
+        const checkoutSection = document.getElementById('cart-checkout-section');
+
+        if (cart.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">&#128722;</div>
+                    <div class="empty-state-text">Корзина пуста</div>
+                </div>
+            `;
+            summarySection.style.display = 'none';
+            checkoutSection.style.display = 'none';
+            return;
+        }
+
+        container.innerHTML = cart.map(c => {
+            const p = products.find(x => String(x.id) === String(c.id));
+            if (!p) return '';
+            const itemTotal = parseInt(p.price) * c.count;
+            return `
+                <div class="cart-item">
+                    <img src="${p.image}" class="cart-item-img" onclick="openProduct('${p.id}')">
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${p.name}</div>
+                        <div class="cart-item-price">${itemTotal} ₽</div>
+                        <div class="cart-item-controls">
+                            <button class="cart-ctrl-btn remove" onclick="removeFromCart('${p.id}')">&#8722;</button>
+                            <span class="cart-ctrl-val">${c.count}</span>
+                            <button class="cart-ctrl-btn" onclick="updateCartCount('${p.id}', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        const total = getCartTotal();
+        const totalItems = cart.reduce((s, c) => s + c.count, 0);
+
+        summarySection.style.display = 'block';
+        summarySection.innerHTML = `
+            <div class="cart-summary">
+                <div class="cart-total-row">
+                    <span class="cart-total-label">Товаров</span>
+                    <span class="cart-total-value">${totalItems} шт.</span>
+                </div>
+                <div class="cart-total-row grand">
+                    <span class="cart-total-label">Итого</span>
+                    <span class="cart-total-value">${total} ₽</span>
+                </div>
+            </div>
+        `;
+
+        checkoutSection.style.display = 'block';
+        checkoutSection.innerHTML = `
+            <div class="order-section" style="margin-top: 20px;">
+                <div class="order-section-title">Оформление заказа</div>
+                <input type="text" id="c-name" placeholder="Ваше имя" class="input-field">
+                <input type="tel" id="c-phone" placeholder="Телефон" class="input-field">
+                <button class="btn btn-primary" onclick="startCartPayment()">Оплатить ${total} ₽</button>
+            </div>
+        `;
     }
 
     function renderAdmin() {
@@ -994,25 +732,26 @@
                 <div class="admin-item-stock">В наличии: ${p.stock} шт.</div>
                 <div style="display:flex; align-items:center; justify-content:space-between;">
                     <div class="admin-stock-controls">
-                        <button class="count-btn" style="width:36px;height:36px;font-size:14px;" onclick="changeLocalStock(${p.id}, -1)">-</button>
-                        <input type="number" id="stock-in-${p.id}" value="${p.stock}" class="admin-stock-input" onchange="changeLocalStock(${p.id}, 0, this.value)">
-                        <button class="count-btn" style="width:36px;height:36px;font-size:14px;" onclick="changeLocalStock(${p.id}, 1)">+</button>
+                        <button class="count-btn" style="width:36px;height:36px;font-size:14px;" onclick="changeLocalStock('${p.id}', -1)">-</button>
+                        <input type="number" id="stock-in-${p.id}" value="${p.stock}" class="admin-stock-input" onchange="changeLocalStock('${p.id}', 0, this.value)">
+                        <button class="count-btn" style="width:36px;height:36px;font-size:14px;" onclick="changeLocalStock('${p.id}', 1)">+</button>
                     </div>
-                    <button class="btn-ghost-sm" onclick="saveStock(${p.id})">Сохранить</button>
+                    <button class="btn-ghost-sm" onclick="saveStock('${p.id}')">Сохранить</button>
                 </div>
             </div>
         `).join('');
     }
 
     function changeLocalStock(id, delta, manualValue = null) {
-        const p = products.find(x => x.id === id);
+        const p = products.find(x => String(x.id) === String(id));
+        if (!p) return;
         if (manualValue !== null) p.stock = parseInt(manualValue) || 0;
         else p.stock = Math.max(0, p.stock + delta);
         document.getElementById(`stock-in-${id}`).value = p.stock;
     }
 
     async function saveStock(id) {
-        const p = products.find(x => x.id === id);
+        const p = products.find(x => String(x.id) === String(id));
         await apiAction('update_stock', { id: id, totalStock: p.stock });
         tg.showAlert("Запас обновлен");
     }
@@ -1062,14 +801,15 @@
     }
 
     function openProduct(id) {
-        const p = products.find(x => x.id === id);
-        currentOrder = { id: p.id, count: 1 };
+        const p = products.find(x => String(x.id) === String(id));
+        if (!p) return;
+        currentModalCount = 1;
         document.getElementById('modal-body').innerHTML = `
             <div class="modal-hero">
                 <img src="${p.image}">
                 <div class="modal-hero-overlay"></div>
                 <div class="modal-hero-badge">Коллекция</div>
-                <button class="close-btn" onclick="closeModal()">✕</button>
+                <button class="close-btn" onclick="closeModal()">&#10005;</button>
             </div>
             <div class="modal-body">
                 <div class="modal-name">${p.name}</div>
@@ -1077,18 +817,13 @@
                 <div class="modal-desc">${p.description || 'Премиальный букет, составленный из свежих цветов лучшими флористами.'}</div>
 
                 <div class="order-section">
-                    <div class="order-section-title">Оформление заказа</div>
-
                     <label style="font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); margin-bottom:8px; display:block;">Количество</label>
                     <div class="count-selector">
-                        <button class="count-btn" onclick="changeOrderCount(-1)">−</button>
-                        <span class="count-value" id="order-c">1</span>
-                        <button class="count-btn" onclick="changeOrderCount(1)">+</button>
+                        <button class="count-btn" onclick="changeModalCount(-1)">&#8722;</button>
+                        <span class="count-value" id="modal-count">1</span>
+                        <button class="count-btn" onclick="changeModalCount(1)">+</button>
                     </div>
-
-                    <input type="text" id="c-name" placeholder="Ваше имя" class="input-field">
-                    <input type="tel" id="c-phone" placeholder="Телефон" class="input-field">
-                    <button class="btn btn-primary" onclick="startPayment()">Оплатить заказ</button>
+                    <button class="btn btn-primary" onclick="addToCartFromModal('${p.id}')">В корзину</button>
                 </div>
             </div>
         `;
@@ -1099,37 +834,50 @@
         tg.BackButton.onClick(closeModal);
     }
 
-    function changeOrderCount(d) {
-        currentOrder.count = Math.max(1, currentOrder.count + d);
-        document.getElementById('order-c').innerText = currentOrder.count;
+    function changeModalCount(d) {
+        currentModalCount = Math.max(1, currentModalCount + d);
+        document.getElementById('modal-count').innerText = currentModalCount;
     }
 
-    async function startPayment() {
+    function addToCartFromModal(productId) {
+        addToCart(productId, currentModalCount);
+        closeModal();
+        switchPage('cart', document.querySelectorAll('.nav-btn')[1]);
+    }
+
+    async function startCartPayment() {
         const name = document.getElementById('c-name').value;
         const phone = document.getElementById('c-phone').value;
         if (!name || !phone) { tg.showAlert("Заполните данные!"); return; }
+        if (cart.length === 0) { tg.showAlert("Корзина пуста!"); return; }
 
-        const section = document.querySelector('.order-section');
+        const checkoutSection = document.getElementById('cart-checkout-section');
         tg.MainButton.setText("СОЗДАНИЕ СЧЕТА...").show();
 
+        const items = cart.map(c => {
+            const p = products.find(x => String(x.id) === String(c.id));
+            return { productId: c.id, count: c.count, name: p ? p.name : '', price: p ? p.price : 0 };
+        });
+
         const res = await apiAction('pay', {
-            productId: currentOrder.id,
-            count: currentOrder.count,
+            items,
             customerName: name,
             customerPhone: phone
         });
 
         if (res?.paymentUrl) {
-            section.innerHTML = `
-                <div class="pay-loading">
-                    <div class="spinner-wrap">
-                        <div class="spinner-glow"></div>
-                        <div class="spinner"></div>
+            checkoutSection.innerHTML = `
+                <div class="order-section">
+                    <div class="pay-loading">
+                        <div class="spinner-wrap">
+                            <div class="spinner-glow"></div>
+                            <div class="spinner"></div>
+                        </div>
+                        <div class="pay-title">Ожидаем оплату</div>
+                        <div class="pay-subtitle">Перейдите по ссылке для завершения</div>
+                        <a href="${res.paymentUrl}" target="_blank" class="pay-link">&#10132; Ссылка на оплату</a>
+                        <button class="btn btn-ghost" style="margin-top:8px; font-size:12px; letter-spacing:0.5px;" onclick="checkPaymentStatus('${res.orderId}')">Проверить статус</button>
                     </div>
-                    <div class="pay-title">Ожидаем оплату</div>
-                    <div class="pay-subtitle">Перейдите по ссылке для завершения</div>
-                    <a href="${res.paymentUrl}" target="_blank" class="pay-link">&#10132; Ссылка на оплату</a>
-                    <button class="btn btn-ghost" style="margin-top:8px; font-size:12px; letter-spacing:0.5px;" onclick="checkPaymentStatus('${res.orderId}')">Проверить статус</button>
                 </div>
             `;
             tg.MainButton.hide();
@@ -1147,8 +895,10 @@
             clearInterval(paymentCheckInterval);
             tg.HapticFeedback.notificationOccurred('success');
             tg.showAlert("Оплата принята!");
-            closeModal();
-            apiAction('get_items');
+            cart = [];
+            updateCartBadge();
+            renderCart();
+            renderCatalog();
         }
     }
 
@@ -1166,6 +916,7 @@
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         el.classList.add('active');
         if (p === 'profile') loadOrders();
+        if (p === 'cart') renderCart();
         tg.HapticFeedback.impactOccurred('light');
     }
 
