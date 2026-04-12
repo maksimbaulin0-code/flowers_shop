@@ -613,7 +613,7 @@
         if (action === 'admin_add') {
             payload.name = document.getElementById('add-name').value;
             payload.price = document.getElementById('add-price').value;
-            payload.image = document.getElementById('add-img').value;
+            payload.image_url = document.getElementById('add-img').value;
             payload.stock = document.getElementById('add-stock').value;
         }
 
@@ -647,7 +647,7 @@
         container.innerHTML = products.map((p, i) => `
             <div class="card" style="animation: floatUp 0.5s ease ${i * 0.08}s both;">
                 <div class="card-img-wrap" onclick="openProduct('${p.id}')">
-                    <img src="${p.image}" class="card-img" loading="lazy">
+                    <img src="${p.image_url}" class="card-img" loading="lazy">
                     <div class="card-img-overlay"></div>
                 </div>
                 <div class="card-content" onclick="openProduct('${p.id}')">
@@ -682,7 +682,7 @@
             const itemTotal = parseInt(p.price) * c.count;
             return `
                 <div class="cart-item">
-                    <img src="${p.image}" class="cart-item-img" onclick="openProduct('${p.id}')">
+                    <img src="${p.image_url}" class="cart-item-img" onclick="openProduct('${p.id}')">
                     <div class="cart-item-info">
                         <div class="cart-item-name">${p.name}</div>
                         <div class="cart-item-price">${itemTotal} ₽</div>
@@ -806,7 +806,7 @@
         currentModalCount = 1;
         document.getElementById('modal-body').innerHTML = `
             <div class="modal-hero">
-                <img src="${p.image}">
+                <img src="${p.image_url}">
                 <div class="modal-hero-overlay"></div>
                 <div class="modal-hero-badge">Коллекция</div>
                 <button class="close-btn" onclick="closeModal()">&#10005;</button>
