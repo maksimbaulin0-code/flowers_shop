@@ -7,118 +7,901 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #000000;
-            --card-bg: #0a0a0a;
-            --accent: #00ff88;
-            --accent-dim: rgba(0, 255, 136, 0.1);
-            --text-main: #ffffff;
-            --text-dim: #666666;
-            --border: #1a1a1a;
+            --bg: #0c0b0d;
+            --bg-elevated: #141316;
+            --card-bg: rgba(20, 19, 22, 0.6);
+            --accent: #d4a0a0;
+            --accent-bright: #e8b4b4;
+            --accent-glow: rgba(212, 160, 160, 0.15);
+            --accent-glow-strong: rgba(212, 160, 160, 0.25);
+            --gold: #c4a265;
+            --gold-dim: rgba(196, 162, 101, 0.12);
+            --text-main: #f0ece6;
+            --text-dim: #7a7580;
+            --text-mid: #a09aa6;
+            --border: rgba(255, 255, 255, 0.06);
+            --border-light: rgba(255, 255, 255, 0.1);
             --glass: rgba(255, 255, 255, 0.03);
-            --status-paid: #00ff88;
-            --status-pending: #ffcc00;
+            --glass-heavy: rgba(255, 255, 255, 0.05);
+            --gradient-card: linear-gradient(135deg, rgba(212, 160, 160, 0.05) 0%, transparent 60%);
+            --gradient-hero: linear-gradient(180deg, rgba(212, 160, 160, 0.08) 0%, transparent 50%);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+            --shadow-md: 0 8px 32px rgba(0,0,0,0.4);
+            --shadow-lg: 0 16px 48px rgba(0,0,0,0.5);
+            --status-paid: #7ec8a0;
+            --status-pending: #e0c36a;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
 
         body {
-            font-family: 'Geist', sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             background-color: var(--bg);
             color: var(--text-main);
-            margin: 0; padding: 0;
-            line-height: 1.5;
+            line-height: 1.6;
             overflow-x: hidden;
+            min-height: 100vh;
         }
 
-        #app { padding: 20px; padding-bottom: 120px; }
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(212, 160, 160, 0.04) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(196, 162, 101, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
 
-        h1 { font-size: 28px; font-weight: 800; letter-spacing: -1px; margin: 0; text-transform: uppercase; }
-        .subtitle { color: var(--text-dim); font-size: 13px; margin-bottom: 30px; display: block; }
+        #app {
+            position: relative;
+            z-index: 1;
+            padding: 0 20px 120px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
 
-        .page { display: none; }
+        .page { display: none; animation: fadeIn 0.4s ease; }
         .page.active { display: block; }
 
-        /* Каталог */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; position: relative; transition: transform 0.2s; }
-        .card:active { transform: scale(0.97); }
-        .card-img { width: 100%; height: 180px; object-fit: cover; }
-        .card-content { padding: 14px; }
-        .card-price { font-size: 18px; font-weight: 700; color: var(--accent); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        /* Профиль и заказы */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(212, 160, 160, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(212, 160, 160, 0.2); }
+        }
+
+        .brand {
+            padding: 40px 0 8px;
+            text-align: center;
+        }
+
+        .brand-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 36px;
+            font-weight: 300;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            color: var(--text-main);
+            background: linear-gradient(135deg, var(--text-main) 0%, var(--accent) 50%, var(--gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-sub {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 13px;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        .brand-line {
+            width: 40px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            margin: 16px auto 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-top: 8px;
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            color: var(--text-main);
+        }
+
+        .section-badge {
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--accent);
+            padding: 4px 12px;
+            border: 1px solid var(--accent-glow-strong);
+            border-radius: 20px;
+            background: var(--accent-glow);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--gradient-card);
+            z-index: 1;
+            pointer-events: none;
+            border-radius: 24px;
+        }
+
+        .card:active {
+            transform: scale(0.96);
+            border-color: var(--border-light);
+        }
+
+        .card-img-wrap {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .card:hover .card-img,
+        .card:active .card-img {
+            transform: scale(1.05);
+        }
+
+        .card-img-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(transparent, rgba(12, 11, 13, 0.8));
+            z-index: 2;
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 2;
+            padding: 16px 16px 18px;
+        }
+
+        .card-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .card-price {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--accent-bright);
+            letter-spacing: 0.5px;
+        }
+
+        .card-price span {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text-dim);
+        }
+
         .order-card {
-            background: var(--card-bg); border: 1px solid var(--border);
-            border-radius: 16px; padding: 16px; margin-bottom: 12px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 14px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-        .order-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .order-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; }
-        .status-paid { background: var(--accent-dim); color: var(--accent); }
-        .status-pending { background: rgba(255, 204, 0, 0.1); color: #ffcc00; }
-        .order-details { 
-            display: none; margin-top: 10px; padding-top: 10px; 
-            border-top: 1px dashed var(--border); font-size: 13px; 
+
+        .order-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-glow-strong), transparent);
         }
+
+        .order-card:active {
+            transform: scale(0.98);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .order-id {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .order-date {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        .order-status {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+
+        .status-paid {
+            background: rgba(126, 200, 160, 0.12);
+            color: var(--status-paid);
+            border: 1px solid rgba(126, 200, 160, 0.2);
+        }
+
+        .status-pending {
+            background: rgba(224, 195, 106, 0.12);
+            color: var(--status-pending);
+            border: 1px solid rgba(224, 195, 106, 0.2);
+        }
+
+        .order-amount {
+            color: var(--accent-bright);
+            font-weight: 600;
+            font-size: 20px;
+            margin-top: 12px;
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .order-details {
+            display: none;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--text-mid);
+        }
+
         .order-card.open .order-details { display: block; }
 
-        /* Оплата (Loading) */
-        .pay-loading { text-align: center; padding: 30px 10px; }
-        .spinner {
-            width: 40px; height: 40px; border: 4px solid var(--accent-dim);
-            border-top: 4px solid var(--accent); border-radius: 50%;
-            margin: 0 auto 20px; animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .retry-link {
-            display: block; margin: 15px 0; color: var(--accent);
-            font-size: 14px; text-decoration: none; border: 1px dashed var(--accent);
-            padding: 12px; border-radius: 12px;
+        .order-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
         }
 
-        /* Формы и модалки */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; padding: 20px; overflow-y: auto; }
-        .input-group { margin-bottom: 15px; }
-        input, textarea { width: 100%; background: var(--card-bg); border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 12px; outline: none; }
-        .btn { background: var(--accent); color: #000; border: none; padding: 16px; border-radius: 14px; font-weight: 700; width: 100%; cursor: pointer; }
-        .btn-secondary { background: var(--glass); color: var(--text-main); border: 1px solid var(--border); }
-        
-        .nav {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: calc(100% - 40px); max-width: 450px;
-            background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(20px);
-            border: 1px solid var(--border); border-radius: 24px;
-            display: flex; padding: 6px; z-index: 100;
+        .order-detail-label {
+            color: var(--text-dim);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .nav-btn { flex: 1; padding: 12px; text-align: center; font-size: 12px; color: var(--text-dim); border-radius: 18px; }
-        .nav-btn.active { background: var(--glass); color: var(--accent); }
+
+        .order-detail-value {
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 1000;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .modal.show {
+            display: block;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-content {
+            padding: 0 20px 40px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .modal-hero {
+            position: relative;
+            width: calc(100% + 40px);
+            margin: 0 -20px;
+            height: 380px;
+            overflow: hidden;
+        }
+
+        .modal-hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .modal-hero-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 150px;
+            background: linear-gradient(transparent, var(--bg));
+        }
+
+        .modal-hero-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(12, 11, 13, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: 1px solid var(--border);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-mid);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .modal-body {
+            position: relative;
+            margin-top: -40px;
+        }
+
+        .modal-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32px;
+            font-weight: 400;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .modal-price {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--accent-bright);
+            margin-bottom: 16px;
+        }
+
+        .modal-desc {
+            font-size: 14px;
+            color: var(--text-mid);
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+
+        .order-section {
+            background: var(--bg-elevated);
+            padding: 24px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .order-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-glow-strong), transparent);
+        }
+
+        .order-section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--text-main);
+        }
+
+        .count-selector {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            background: var(--glass-heavy);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+
+        .count-btn {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--glass-heavy);
+            border: none;
+            color: var(--text-main);
+            font-size: 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 300;
+        }
+
+        .count-btn:active {
+            background: var(--accent-glow);
+            color: var(--accent-bright);
+        }
+
+        .count-value {
+            flex: 1;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-main);
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .input-field {
+            width: 100%;
+            background: var(--glass-heavy);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 16px 18px;
+            border-radius: 16px;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            margin-bottom: 12px;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-glow-strong);
+            background: rgba(212, 160, 160, 0.03);
+        }
+
+        .input-field::placeholder {
+            color: var(--text-dim);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 18px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--gold) 100%);
+            color: #0c0b0d;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-primary:hover::after {
+            opacity: 1;
+        }
+
+        .btn-ghost {
+            background: var(--glass-heavy);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+
+        .btn-ghost:active {
+            background: var(--accent-glow);
+            border-color: var(--accent-glow-strong);
+        }
+
+        .btn-ghost-sm {
+            background: var(--glass-heavy);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-ghost-sm:active {
+            background: var(--accent-glow);
+        }
+
+        .pay-loading {
+            text-align: center;
+            padding: 40px 10px;
+        }
+
+        .spinner-wrap {
+            position: relative;
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 24px;
+        }
+
+        .spinner {
+            width: 56px;
+            height: 56px;
+            border: 2px solid var(--border);
+            border-top: 2px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+
+        .spinner-glow {
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            background: var(--accent-glow);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .pay-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+
+        .pay-subtitle {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+        }
+
+        .pay-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-bright);
+            font-size: 14px;
+            text-decoration: none;
+            padding: 14px 24px;
+            border: 1px solid var(--accent-glow-strong);
+            border-radius: 16px;
+            background: var(--accent-glow);
+            margin-bottom: 12px;
+            transition: all 0.3s;
+        }
+
+        .pay-link:active {
+            transform: scale(0.97);
+            background: var(--accent-glow-strong);
+        }
+
+        .nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 440px;
+            background: rgba(14, 13, 16, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            display: flex;
+            padding: 6px;
+            z-index: 100;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 14px 8px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            border-radius: 22px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .nav-btn.active {
+            background: var(--accent-glow);
+            color: var(--accent-bright);
+        }
+
+        .nav-btn.active::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--accent-bright);
+        }
+
+        .admin-panel {
+            background: var(--bg-elevated);
+            padding: 24px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+        }
+
+        .admin-panel-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--gold);
+        }
+
+        .admin-item {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+        }
+
+        .admin-item-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .admin-item-stock {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+        }
+
+        .admin-stock-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--glass-heavy);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            padding: 4px;
+        }
+
+        .admin-stock-input {
+            width: 48px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 600;
+            padding: 8px 0;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-state-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            color: var(--text-dim);
+            font-weight: 400;
+        }
+
+        .loading-skeleton {
+            background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--glass-heavy) 50%, var(--bg-elevated) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 20px;
+            height: 260px;
+        }
+
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-light), transparent);
+            margin: 24px 0;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(12, 11, 13, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.2s;
+        }
+
+        .close-btn:active {
+            background: rgba(212, 160, 160, 0.15);
+        }
     </style>
 </head>
 <body>
 
 <div id="app">
     <div id="shop-page" class="page active">
-        <h1>Renerie Ciel</h1>
-        <span class="subtitle">Premium Floral Boutique</span>
+        <div class="brand">
+            <div class="brand-logo">Renerie Ciel</div>
+            <div class="brand-sub">Floral Boutique</div>
+            <div class="brand-line"></div>
+        </div>
+        <div class="section-header">
+            <div class="section-title">Коллекция</div>
+            <div class="section-badge" id="items-count"></div>
+        </div>
         <div class="grid" id="catalog-container"></div>
     </div>
 
     <div id="profile-page" class="page">
-        <h1>Мои заказы</h1>
-        <span class="subtitle">Нажмите на заказ, чтобы увидеть детали</span>
+        <div class="brand">
+            <div class="brand-logo">Мои заказы</div>
+            <div class="brand-sub">История покупок</div>
+            <div class="brand-line"></div>
+        </div>
         <div id="orders-container"></div>
     </div>
 
     <div id="admin-page" class="page">
-        <h1>Управление</h1>
-        <div style="background: var(--card-bg); padding: 15px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 20px;">
-            <input type="text" id="add-name" placeholder="Название" class="input-group">
-            <input type="number" id="add-price" placeholder="Цена" class="input-group">
-            <input type="text" id="add-img" placeholder="URL фото" class="input-group">
-            <input type="number" id="add-stock" placeholder="Кол-во" class="input-group">
-            <button class="btn" onclick="apiAction('admin_add')">Добавить товар</button>
+        <div class="brand">
+            <div class="brand-logo">Управление</div>
+            <div class="brand-sub">Панель администратора</div>
+            <div class="brand-line"></div>
+        </div>
+        <div class="admin-panel">
+            <div class="admin-panel-title">Новый товар</div>
+            <input type="text" id="add-name" placeholder="Название букета" class="input-field">
+            <input type="number" id="add-price" placeholder="Цена, ₽" class="input-field">
+            <input type="text" id="add-img" placeholder="URL фотографии" class="input-field">
+            <input type="number" id="add-stock" placeholder="Количество" class="input-field">
+            <button class="btn btn-primary" onclick="apiAction('admin_add')">Добавить в коллекцию</button>
         </div>
         <div id="admin-list"></div>
     </div>
@@ -129,9 +912,15 @@
 </div>
 
 <nav class="nav">
-    <div class="nav-btn active" onclick="switchPage('shop', this)">Каталог</div>
-    <div class="nav-btn" onclick="switchPage('profile', this)">Профиль</div>
-    <div class="nav-btn" id="nav-admin" style="display: none;" onclick="switchPage('admin', this)">Админ</div>
+    <div class="nav-btn active" onclick="switchPage('shop', this)">
+        <span>&#9733;</span> Каталог
+    </div>
+    <div class="nav-btn" onclick="switchPage('profile', this)">
+        <span>&#9830;</span> Профиль
+    </div>
+    <div class="nav-btn" id="nav-admin" style="display: none;" onclick="switchPage('admin', this)">
+        <span>&#9881;</span> Админ
+    </div>
 </nav>
 
 <script>
@@ -174,12 +963,18 @@
 
     function renderCatalog() {
         const container = document.getElementById('catalog-container');
-        container.innerHTML = products.map(p => `
-            <div class="card" onclick="openProduct(${p.id})">
-                <img src="${p.image}" class="card-img">
+        const countEl = document.getElementById('items-count');
+        if (countEl) countEl.textContent = products.length + ' штук';
+
+        container.innerHTML = products.map((p, i) => `
+            <div class="card" onclick="openProduct(${p.id})" style="animation: floatUp 0.5s ease ${i * 0.08}s both;">
+                <div class="card-img-wrap">
+                    <img src="${p.image}" class="card-img" loading="lazy">
+                    <div class="card-img-overlay"></div>
+                </div>
                 <div class="card-content">
-                    <div style="font-size:14px; margin-bottom:5px;">${p.name}</div>
-                    <div class="card-price">${p.price} ₽</div>
+                    <div class="card-name">${p.name}</div>
+                    <div class="card-price">${p.price} <span>₽</span></div>
                 </div>
             </div>
         `).join('');
@@ -188,16 +983,17 @@
     function renderAdmin() {
         const list = document.getElementById('admin-list');
         list.innerHTML = products.map(p => `
-            <div class="order-card" style="margin-bottom:10px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div><b>${p.name}</b><br><small>Stock: ${p.stock}</small></div>
-                    <div style="display:flex; gap:5px;">
-                        <button class="btn btn-secondary" style="padding:5px 10px;" onclick="changeLocalStock(${p.id}, -1)">-</button>
-                        <input type="number" id="stock-in-${p.id}" value="${p.stock}" style="width:50px; padding:5px; text-align:center;" onchange="changeLocalStock(${p.id}, 0, this.value)">
-                        <button class="btn btn-secondary" style="padding:5px 10px;" onclick="changeLocalStock(${p.id}, 1)">+</button>
+            <div class="admin-item">
+                <div class="admin-item-name">${p.name}</div>
+                <div class="admin-item-stock">В наличии: ${p.stock} шт.</div>
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <div class="admin-stock-controls">
+                        <button class="count-btn" style="width:36px;height:36px;font-size:14px;" onclick="changeLocalStock(${p.id}, -1)">-</button>
+                        <input type="number" id="stock-in-${p.id}" value="${p.stock}" class="admin-stock-input" onchange="changeLocalStock(${p.id}, 0, this.value)">
+                        <button class="count-btn" style="width:36px;height:36px;font-size:14px;" onclick="changeLocalStock(${p.id}, 1)">+</button>
                     </div>
+                    <button class="btn-ghost-sm" onclick="saveStock(${p.id})">Сохранить</button>
                 </div>
-                <button class="btn btn-secondary" style="margin-top:10px; font-size:12px;" onclick="saveStock(${p.id})">Сохранить кол-во</button>
             </div>
         `).join('');
     }
@@ -217,27 +1013,43 @@
 
     async function loadOrders() {
         const container = document.getElementById('orders-container');
-        container.innerHTML = '<p style="text-align:center; color:var(--text-dim);">Загрузка заказов...</p>';
+        container.innerHTML = `
+            <div style="padding: 20px 0;">
+                <div class="loading-skeleton" style="height:80px; margin-bottom:12px;"></div>
+                <div class="loading-skeleton" style="height:80px; margin-bottom:12px;"></div>
+            </div>
+        `;
         const orders = await apiAction('get_orders');
-        
+
         if (!orders || orders.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color:var(--text-dim); margin-top:40px;">Заказов пока нет</p>';
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">&#10047;</div>
+                    <div class="empty-state-text">Заказов пока нет</div>
+                </div>
+            `;
             return;
         }
 
-        container.innerHTML = orders.map(o => `
-            <div class="order-card" onclick="this.classList.toggle('open')">
+        container.innerHTML = orders.map((o, i) => `
+            <div class="order-card" onclick="this.classList.toggle('open')" style="animation: floatUp 0.4s ease ${i * 0.06}s both;">
                 <div class="order-header">
                     <div>
-                        <div style="font-weight:600;">Заказ #${o.orderId ? o.orderId.slice(0,8) : '000'}</div>
-                        <div style="font-size:11px; color:var(--text-dim);">${o.date || ''}</div>
+                        <div class="order-id">Заказ #${o.orderId ? o.orderId.slice(0,8) : '000'}</div>
+                        <div class="order-date">${o.date || ''}</div>
                     </div>
-                    <div class="order-status ${o.status === 'paid' ? 'status-paid' : 'status-pending'}">${o.status}</div>
+                    <div class="order-status ${o.status === 'paid' ? 'status-paid' : 'status-pending'}">${o.status === 'paid' ? 'Оплачен' : 'Ожидает'}</div>
                 </div>
-                <div style="color:var(--accent); font-weight:700; margin-top:5px;">${o.amount} ₽</div>
+                <div class="order-amount">${o.amount} ₽</div>
                 <div class="order-details">
-                    <div><b>Состав:</b> ${o.details || 'Букет'}</div>
-                    <div><b>Кол-во:</b> ${o.count || 1} шт.</div>
+                    <div class="order-detail-row">
+                        <span class="order-detail-label">Состав</span>
+                        <span class="order-detail-value">${o.details || 'Букет'}</span>
+                    </div>
+                    <div class="order-detail-row">
+                        <span class="order-detail-label">Количество</span>
+                        <span class="order-detail-value">${o.count || 1} шт.</span>
+                    </div>
                 </div>
             </div>
         `).join('');
@@ -247,23 +1059,36 @@
         const p = products.find(x => x.id === id);
         currentOrder = { id: p.id, count: 1 };
         document.getElementById('modal-body').innerHTML = `
-            <img src="${p.image}" style="width:100%; height:300px; object-fit:cover; border-radius:20px;">
-            <h1 style="margin-top:15px;">${p.name}</h1>
-            <div class="card-price" style="font-size:24px;">${p.price} ₽</div>
-            <p style="color:var(--text-dim);">${p.description || 'Премиальный букет.'}</p>
-            <div class="order-section" style="background:var(--card-bg); padding:15px; border-radius:15px; border:1px solid var(--border);">
-                <label style="font-size:12px; color:var(--text-dim);">Количество</label>
-                <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px;">
-                    <button class="btn btn-secondary" style="width:40px; padding:10px;" onclick="changeOrderCount(-1)">-</button>
-                    <span id="order-c" style="font-weight:700;">1</span>
-                    <button class="btn btn-secondary" style="width:40px; padding:10px;" onclick="changeOrderCount(1)">+</button>
+            <div class="modal-hero">
+                <img src="${p.image}">
+                <div class="modal-hero-overlay"></div>
+                <div class="modal-hero-badge">Коллекция</div>
+                <button class="close-btn" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-name">${p.name}</div>
+                <div class="modal-price">${p.price} ₽</div>
+                <div class="modal-desc">${p.description || 'Премиальный букет, составленный из свежих цветов лучшими флористами.'}</div>
+
+                <div class="order-section">
+                    <div class="order-section-title">Оформление заказа</div>
+
+                    <label style="font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); margin-bottom:8px; display:block;">Количество</label>
+                    <div class="count-selector">
+                        <button class="count-btn" onclick="changeOrderCount(-1)">−</button>
+                        <span class="count-value" id="order-c">1</span>
+                        <button class="count-btn" onclick="changeOrderCount(1)">+</button>
+                    </div>
+
+                    <input type="text" id="c-name" placeholder="Ваше имя" class="input-field">
+                    <input type="tel" id="c-phone" placeholder="Телефон" class="input-field">
+                    <button class="btn btn-primary" onclick="startPayment()">Оплатить заказ</button>
                 </div>
-                <input type="text" id="c-name" placeholder="Ваше имя" style="margin-bottom:10px;">
-                <input type="tel" id="c-phone" placeholder="Телефон">
-                <button class="btn" style="margin-top:15px;" onclick="startPayment()">Оплатить заказ</button>
             </div>
         `;
-        document.getElementById('product-modal').style.display = 'block';
+        const modal = document.getElementById('product-modal');
+        modal.classList.add('show');
+        modal.style.display = 'block';
         tg.BackButton.show();
         tg.BackButton.onClick(closeModal);
     }
@@ -291,10 +1116,14 @@
         if (res?.paymentUrl) {
             section.innerHTML = `
                 <div class="pay-loading">
-                    <div class="spinner"></div>
-                    <h3>Ожидаем оплату...</h3>
-                    <a href="${res.paymentUrl}" target="_blank" class="retry-link">🔗 Ссылка на оплату</a>
-                    <button class="btn btn-secondary" style="font-size:12px;" onclick="checkPaymentStatus('${res.orderId}')">Проверить вручную</button>
+                    <div class="spinner-wrap">
+                        <div class="spinner-glow"></div>
+                        <div class="spinner"></div>
+                    </div>
+                    <div class="pay-title">Ожидаем оплату</div>
+                    <div class="pay-subtitle">Перейдите по ссылке для завершения</div>
+                    <a href="${res.paymentUrl}" target="_blank" class="pay-link">&#10132; Ссылка на оплату</a>
+                    <button class="btn btn-ghost" style="margin-top:8px; font-size:12px; letter-spacing:0.5px;" onclick="checkPaymentStatus('${res.orderId}')">Проверить статус</button>
                 </div>
             `;
             tg.MainButton.hide();
@@ -318,7 +1147,9 @@
     }
 
     function closeModal() {
-        document.getElementById('product-modal').style.display = 'none';
+        const modal = document.getElementById('product-modal');
+        modal.classList.remove('show');
+        modal.style.display = 'none';
         tg.BackButton.hide();
         clearInterval(paymentCheckInterval);
     }
