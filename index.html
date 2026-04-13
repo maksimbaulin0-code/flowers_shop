@@ -358,6 +358,39 @@
         .order-detail-label { color: var(--text-dim); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
         .order-detail-value { color: var(--text-main); font-weight: 500; }
 
+        .cancel-order-btn {
+            width: 100%;
+            margin-top: 14px;
+            padding: 12px;
+            border: 1px solid var(--danger-glow);
+            background: var(--danger-glow);
+            color: var(--danger);
+            border-radius: 14px;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .cancel-order-btn:active { transform: scale(0.97); background: rgba(212, 106, 106, 0.25); }
+
+        .pay-timer {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--accent-bright);
+            margin: 16px 0 8px;
+            letter-spacing: 2px;
+        }
+        .pay-timer.expired { color: var(--danger); }
+        .pay-timer-label {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+        }
+
         .modal {
             display: none; position: fixed; top: 0; left: 0;
             width: 100%; height: 100%; background: var(--bg);
@@ -718,6 +751,8 @@
     let paymentCheckInterval;
     let currentModalCount = 1;
     let currentSort = 'default';
+    let paymentTimerInterval = null;
+    let paymentExpiresAt = null;
 
     function showToast(msg) {
         const container = document.getElementById('toast-container');
@@ -788,6 +823,75 @@
             const p = products.find(x => String(x.id) === String(c.id));
             return sum + (p ? parseInt(p.price) * c.count : 0);
         }, 0);
+    }
+
+    async function cancelOrder(orderId, status) {
+        const confirmed = await new Promise(resolve => {
+            tg.showConfirm(
+                status === 'paid'
+                    ? 'Отменить оплаченный заказ? Возврат средств будет обработан отдельно.'
+                    : 'Отменить заказ?',
+                (ok) => resolve(ok)
+            );
+        });
+        if (!confirmed) return;
+
+        const payload = { action: 'cancel_order', orderId: orderId };
+        if (status === 'paid') {
+            payload.orderId = orderId;
+            payload.isPaid = true;
+        } else {
+            payload.isPaid = false;
+        }
+
+        const user = tg.initDataUnsafe?.user || {};
+        payload.userId = user.id;
+        payload.username = user.username || 'unknown';
+        payload.firstName = user.first_name || 'Guest';
+
+        try {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            tg.HapticFeedback.notificationOccurred('success');
+            tg.showAlert("Заказ отменён");
+            loadOrders();
+        } catch(e) {
+            console.error(e);
+            tg.showAlert("Ошибка при отмене заказа");
+        }
+    }
+
+    function startPaymentTimer() {
+        paymentExpiresAt = Date.now() + 15 * 60 * 1000;
+        clearInterval(paymentTimerInterval);
+        paymentTimerInterval = setInterval(updatePaymentTimer, 1000);
+        updatePaymentTimer();
+    }
+
+    function updatePaymentTimer() {
+        const el = document.getElementById('pay-timer');
+        const label = document.getElementById('pay-timer-label');
+        if (!el) { clearInterval(paymentTimerInterval); return; }
+
+        const remaining = Math.max(0, paymentExpiresAt - Date.now());
+        const mins = Math.floor(remaining / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+        el.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+        if (remaining <= 0) {
+            clearInterval(paymentTimerInterval);
+            clearInterval(paymentCheckInterval);
+            el.classList.add('expired');
+            if (label) label.textContent = 'Время оплаты истекло';
+            const payLink = document.querySelector('.pay-link');
+            if (payLink) payLink.style.pointerEvents = 'none';
+        } else {
+            if (label) label.textContent = 'Для оплаты заказа';
+        }
     }
 
     function isInCart(productId) {
@@ -1075,6 +1179,7 @@
                         <span class="order-detail-label">Комментарий</span>
                         <span class="order-detail-value">${o.comment}</span>
                     </div>` : ''}
+                    <button class="cancel-order-btn" onclick="event.stopPropagation(); cancelOrder('${o.orderId}', '${o.status}')">Отменить заказ</button>
                 </div>
             </div>
         `).join('');
@@ -1190,13 +1295,15 @@
                             <div class="spinner"></div>
                         </div>
                         <div class="pay-title">Ожидаем оплату</div>
-                        <div class="pay-subtitle">Перейдите по ссылке для завершения</div>
+                        <div class="pay-timer" id="pay-timer">15:00</div>
+                        <div class="pay-timer-label" id="pay-timer-label">Для оплаты заказа</div>
                         <a href="${res.paymentUrl}" target="_blank" class="pay-link">&#10132; Ссылка на оплату</a>
                         <button class="btn btn-ghost" style="margin-top:8px; font-size:12px; letter-spacing:0.5px;" onclick="checkPaymentStatus('${res.orderId}')">Проверить статус</button>
                     </div>
                 </div>
             `;
             tg.MainButton.hide();
+            startPaymentTimer();
             if (res.orderId) {
                 clearInterval(paymentCheckInterval);
                 paymentCheckInterval = setInterval(() => checkPaymentStatus(res.orderId), 3000);
@@ -1209,6 +1316,7 @@
         const res = await apiAction('check_status', { orderId: id });
         if (res?.status === 'paid') {
             clearInterval(paymentCheckInterval);
+            clearInterval(paymentTimerInterval);
             tg.HapticFeedback.notificationOccurred('success');
             tg.showAlert("Оплата принята!");
             cart = [];
@@ -1224,6 +1332,7 @@
         modal.style.display = 'none';
         tg.BackButton.hide();
         clearInterval(paymentCheckInterval);
+        clearInterval(paymentTimerInterval);
     }
 
     function switchPage(p, el) {
