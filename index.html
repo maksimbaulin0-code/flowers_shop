@@ -351,6 +351,9 @@
         }
         .status-paid { background: rgba(126, 200, 160, 0.12); color: var(--status-paid); border: 1px solid rgba(126, 200, 160, 0.2); }
         .status-pending { background: rgba(224, 195, 106, 0.12); color: var(--status-pending); border: 1px solid rgba(224, 195, 106, 0.2); }
+        .status-assembling { background: rgba(160, 154, 166, 0.12); color: #c4b8d4; border: 1px solid rgba(160, 154, 166, 0.2); }
+        .status-delivering { background: rgba(101, 163, 212, 0.12); color: #7db8e8; border: 1px solid rgba(101, 163, 212, 0.2); }
+        .status-delivered { background: rgba(126, 200, 160, 0.12); color: #5cb888; border: 1px solid rgba(126, 200, 160, 0.2); }
         .status-cancelled { background: rgba(212, 106, 106, 0.12); color: var(--danger); border: 1px solid rgba(212, 106, 106, 0.2); }
         .order-amount { color: var(--accent-bright); font-weight: 600; font-size: 20px; margin-top: 12px; font-family: 'Cormorant Garamond', serif; }
         .order-details { display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-mid); }
@@ -1131,6 +1134,19 @@
         tg.showAlert("Запас обновлен");
     }
 
+    const STATUS_LABELS = {
+        pending: 'Ожидает',
+        paid: 'Оплачен',
+        assembling: 'Собирается',
+        delivering: 'В пути',
+        delivered: 'Доставлен',
+        cancelled: 'Отменён'
+    };
+
+    function statusLabel(s) {
+        return STATUS_LABELS[s] || STATUS_LABELS.pending;
+    }
+
     async function loadOrders() {
         const container = document.getElementById('orders-container');
         container.innerHTML = `
@@ -1158,7 +1174,7 @@
                         <div class="order-id">Заказ #${(o.orderId || o.order_id || o.id || '000').toString().slice(0,8)}</div>
                         <div class="order-date">${o.date || ''}</div>
                     </div>
-                    <div class="order-status ${o.status === 'paid' ? 'status-paid' : o.status === 'cancelled' ? 'status-cancelled' : 'status-pending'}">${o.status === 'paid' ? 'Оплачен' : o.status === 'cancelled' ? 'Отменён' : 'Ожидает'}</div>
+                    <div class="order-status status-${o.status}">${statusLabel(o.status)}</div>
                 </div>
                 <div class="order-amount">${o.amount} ₽</div>
                 <div class="order-details">
@@ -1183,7 +1199,7 @@
                         <span class="order-detail-label">Комментарий</span>
                         <span class="order-detail-value">${o.comment}</span>
                     </div>` : ''}
-                    ${o.status !== 'cancelled' ? `<button class="cancel-order-btn" onclick="event.stopPropagation(); cancelOrder('${o.orderId || o.order_id || o.id || ''}', '${o.status}')">Отменить заказ</button>` : ''}
+                    ${o.status !== 'cancelled' && o.status !== 'delivered' ? `<button class="cancel-order-btn" onclick="event.stopPropagation(); cancelOrder('${o.orderId || o.order_id || o.id || ''}', '${o.status}')">Отменить заказ</button>` : ''}
                 </div>
             </div>
         `).join('');
