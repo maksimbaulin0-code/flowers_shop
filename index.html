@@ -204,65 +204,58 @@
         .card-price span { font-size: 13px; font-weight: 400; color: var(--text-dim); }
         .card-price.sold-out { color: var(--text-dim); text-decoration: line-through; }
 
-        /* Inline counter on card */
         .card-cart-controls {
-            position: absolute;
-            bottom: 16px;
-            right: 16px;
-            z-index: 3;
             display: flex;
             align-items: center;
             gap: 0;
             background: var(--glass-heavy);
-            border-radius: 20px;
+            border-radius: 14px;
             border: 1px solid var(--border);
             overflow: hidden;
+            margin-top: 8px;
         }
         .card-cart-btn {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: transparent;
             border: none;
             color: var(--text-main);
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
             transition: all 0.2s;
         }
         .card-cart-btn:active { background: var(--accent-glow); color: var(--accent-bright); }
-        .card-cart-btn.add-btn {
-            background: linear-gradient(135deg, var(--accent), var(--gold));
-            color: #0c0b0d;
-            font-weight: 600;
-            font-size: 18px;
-        }
-        .card-cart-btn.add-btn:active { transform: scale(0.9); }
         .card-cart-value {
-            width: 32px;
+            width: 28px;
             text-align: center;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             color: var(--text-main);
         }
-
-        .card-add-btn {
-            position: absolute; bottom: 16px; right: 16px; z-index: 3;
-            width: 38px; height: 38px; border-radius: 50%;
+        .card-add-round {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            z-index: 3;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
             background: linear-gradient(135deg, var(--accent), var(--gold));
-            border: none; color: #0c0b0d; font-size: 20px; font-weight: 300;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s;
+            border: none;
+            color: #0c0b0d;
+            font-size: 20px;
+            font-weight: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
             box-shadow: 0 4px 12px rgba(212, 160, 160, 0.3);
         }
-        .card-add-btn:active { transform: scale(0.9); }
-        .card-add-btn.in-cart {
-            background: var(--accent-glow);
-            color: var(--accent-bright);
-            box-shadow: none;
-            border: 1px solid var(--accent-glow-strong);
-        }
+        .card-add-round:active { transform: scale(0.9); }
 
         .cart-item {
             background: var(--card-bg);
@@ -585,9 +578,14 @@
             pointer-events: none;
         }
 
-        /* Address selector styles */
-        .address-section {
-            margin-bottom: 16px;
+        /* Address fields */
+        .address-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .address-row .input-field {
+            margin-bottom: 10px;
         }
         .address-label {
             font-size: 11px;
@@ -596,6 +594,10 @@
             color: var(--text-dim);
             margin-bottom: 8px;
             display: block;
+        }
+        .field-error {
+            border-color: var(--danger) !important;
+            background: var(--danger-glow) !important;
         }
     </style>
 </head>
@@ -716,22 +718,6 @@
     let paymentCheckInterval;
     let currentModalCount = 1;
     let currentSort = 'default';
-
-    // Moscow districts for address selection
-    const moscowDistricts = [
-        'Центральный АО',
-        'Северный АО',
-        'Северо-Восточный АО',
-        'Восточный АО',
-        'Юго-Восточный АО',
-        'Южный АО',
-        'Юго-Западный АО',
-        'Западный АО',
-        'Северо-Западный АО',
-        'Зеленоградский АО',
-        'Троицкий АО',
-        'Новомосковский АО'
-    ];
 
     function showToast(msg) {
         const container = document.getElementById('toast-container');
@@ -887,22 +873,20 @@
             const cartCount = getCartItemCount(p.id);
             const inCart = cartCount > 0;
             
-            // Render cart controls or add button
-            let cartButtonHtml;
+            let counterHtml = '';
+            let addBtnHtml = '';
             if (isSoldOut) {
-                cartButtonHtml = '';
+                // nothing
             } else if (inCart) {
-                cartButtonHtml = `
-                    <div class="card-cart-controls">
-                        <button class="card-cart-btn" onclick="event.stopPropagation(); updateCartItemCount('${p.id}', -1)">&#8722;</button>
+                counterHtml = `
+                    <div class="card-cart-controls" onclick="event.stopPropagation()">
+                        <button class="card-cart-btn" onclick="updateCartItemCount('${p.id}', -1)">&#8722;</button>
                         <span class="card-cart-value">${cartCount}</span>
-                        <button class="card-cart-btn" onclick="event.stopPropagation(); updateCartItemCount('${p.id}', 1)">+</button>
+                        <button class="card-cart-btn" onclick="updateCartItemCount('${p.id}', 1)">+</button>
                     </div>
                 `;
             } else {
-                cartButtonHtml = `
-                    <button class="card-cart-btn add-btn" onclick="event.stopPropagation(); addToCart('${p.id}', 1)">+</button>
-                `;
+                addBtnHtml = `<button class="card-add-round" onclick="event.stopPropagation(); addToCart('${p.id}', 1)">+</button>`;
             }
             
             return `
@@ -919,8 +903,9 @@
                     <div class="card-content" onclick="${isSoldOut ? '' : `openProduct('${p.id}')`}">
                         <div class="card-name">${p.name}</div>
                         <div class="card-price ${isSoldOut ? 'sold-out' : ''}">${p.price} <span>₽</span></div>
+                        ${counterHtml}
                     </div>
-                    ${cartButtonHtml}
+                    ${addBtnHtml}
                 </div>
             `;
         }).join('');
@@ -980,23 +965,23 @@
             </div>
         `;
 
-        // Build district options
-        const districtOptions = moscowDistricts.map(d => `<option value="${d}">${d}</option>`).join('');
-
         checkoutSection.style.display = 'block';
         checkoutSection.innerHTML = `
             <div class="order-section" style="margin-top: 20px;">
                 <div class="order-section-title">Оформление заказа</div>
-                <input type="text" id="c-name" placeholder="Ваше имя" class="input-field">
-                <input type="tel" id="c-phone" placeholder="Телефон" class="input-field">
-                <div class="address-section">
-                    <label class="address-label">Адрес доставки (Москва)</label>
-                    <select id="c-district" class="select-field">
-                        <option value="">Выберите район</option>
-                        ${districtOptions}
-                    </select>
-                    <input type="text" id="c-address" placeholder="Улица, дом, квартира" class="input-field">
+                <input type="text" id="c-name" placeholder="Ваше имя *" class="input-field">
+                <input type="tel" id="c-phone" placeholder="Телефон *" class="input-field">
+                <label class="address-label">Адрес доставки (Москва)</label>
+                <input type="text" id="c-street" placeholder="Улица *" class="input-field">
+                <div class="address-row">
+                    <input type="text" id="c-house" placeholder="Дом *" class="input-field">
+                    <input type="text" id="c-apartment" placeholder="Квартира" class="input-field">
                 </div>
+                <div class="address-row">
+                    <input type="text" id="c-entrance" placeholder="Подъезд" class="input-field">
+                    <input type="text" id="c-intercom" placeholder="Код домофона" class="input-field">
+                </div>
+                <input type="text" id="c-comment" placeholder="Комментарий к заказу" class="input-field">
                 <button class="btn btn-primary" onclick="startCartPayment()">Оплатить ${total} ₽</button>
             </div>
         `;
@@ -1079,12 +1064,17 @@
                     </div>
                     <div class="order-detail-row">
                         <span class="order-detail-label">Адрес доставки</span>
-                        <span class="order-detail-value">${o.address || 'Москва'}</span>
+                        <span class="order-detail-value">${o.address || '-'}</span>
                     </div>
                     <div class="order-detail-row">
                         <span class="order-detail-label">Телефон</span>
                         <span class="order-detail-value">${o.phone || '-'}</span>
                     </div>
+                    ${o.comment ? `
+                    <div class="order-detail-row">
+                        <span class="order-detail-label">Комментарий</span>
+                        <span class="order-detail-value">${o.comment}</span>
+                    </div>` : ''}
                 </div>
             </div>
         `).join('');
@@ -1136,17 +1126,39 @@
     }
 
     async function startCartPayment() {
-        const name = document.getElementById('c-name').value;
-        const phone = document.getElementById('c-phone').value;
-        const district = document.getElementById('c-district').value;
-        const address = document.getElementById('c-address').value;
+        const name = document.getElementById('c-name').value.trim();
+        const phone = document.getElementById('c-phone').value.trim();
+        const street = document.getElementById('c-street').value.trim();
+        const house = document.getElementById('c-house').value.trim();
+        const apartment = document.getElementById('c-apartment').value.trim();
+        const entrance = document.getElementById('c-entrance').value.trim();
+        const intercom = document.getElementById('c-intercom').value.trim();
+        const comment = document.getElementById('c-comment').value.trim();
+
+        const errors = [];
+        if (!name) errors.push('c-name');
+        if (!phone) errors.push('c-phone');
+        if (!street) errors.push('c-street');
+        if (!house) errors.push('c-house');
         
-        if (!name || !phone) { tg.showAlert("Заполните данные!"); return; }
-        if (!district) { tg.showAlert("Выберите район Москвы!"); return; }
-        if (!address) { tg.showAlert("Укажите адрес доставки!"); return; }
+        errors.forEach(id => document.getElementById(id).classList.add('field-error'));
+        document.querySelectorAll('.input-field').forEach(f => {
+            f.addEventListener('focus', () => f.classList.remove('field-error'), { once: true });
+        });
+
+        if (errors.length > 0) {
+            const labels = { 'c-name': 'Имя', 'c-phone': 'Телефон', 'c-street': 'Улица', 'c-house': 'Дом' };
+            const missing = errors.map(id => labels[id]).join(', ');
+            tg.showAlert("Заполните обязательные поля: " + missing);
+            return;
+        }
         if (cart.length === 0) { tg.showAlert("Корзина пуста!"); return; }
 
-        const fullAddress = `${district}, ${address}`;
+        const addressParts = [street, `д. ${house}`];
+        if (apartment) addressParts.push(`кв. ${apartment}`);
+        if (entrance) addressParts.push(`под. ${entrance}`);
+        if (intercom) addressParts.push(`код ${intercom}`);
+        const fullAddress = addressParts.join(', ');
 
         const checkoutSection = document.getElementById('cart-checkout-section');
         tg.MainButton.setText("СОЗДАНИЕ СЧЕТА...").show();
@@ -1160,7 +1172,13 @@
             items,
             customerName: name,
             customerPhone: phone,
-            address: fullAddress
+            address: fullAddress,
+            street,
+            house,
+            apartment,
+            entrance,
+            intercom,
+            comment
         });
 
         if (res?.paymentUrl) {
