@@ -1154,7 +1154,7 @@
             <div class="order-card" onclick="this.classList.toggle('open')" style="animation: floatUp 0.4s ease ${i * 0.06}s both;">
                 <div class="order-header">
                     <div>
-                        <div class="order-id">Заказ #${(o.orderId || o.id || o.order_id || '000').toString().slice(0,8)}</div>
+                        <div class="order-id">Заказ #${(o.orderId || o.order_id || o.id || '000').toString().slice(0,8)}</div>
                         <div class="order-date">${o.date || ''}</div>
                     </div>
                     <div class="order-status ${o.status === 'paid' ? 'status-paid' : 'status-pending'}">${o.status === 'paid' ? 'Оплачен' : 'Ожидает'}</div>
@@ -1182,7 +1182,7 @@
                         <span class="order-detail-label">Комментарий</span>
                         <span class="order-detail-value">${o.comment}</span>
                     </div>` : ''}
-                    <button class="cancel-order-btn" onclick="event.stopPropagation(); cancelOrder('${o.orderId || o.id || o.order_id || ''}', '${o.status}')">Отменить заказ</button>
+                    <button class="cancel-order-btn" onclick="event.stopPropagation(); cancelOrder('${o.orderId || o.order_id || o.id || ''}', '${o.status}')">Отменить заказ</button>
                 </div>
             </div>
         `).join('');
