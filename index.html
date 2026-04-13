@@ -107,6 +107,38 @@
             border-radius: 20px; background: var(--accent-glow);
         }
 
+        /* Sort buttons */
+        .sort-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+        .sort-bar::-webkit-scrollbar { display: none; }
+        .sort-btn {
+            background: var(--glass-heavy);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .sort-btn.active {
+            background: var(--accent-glow);
+            border-color: var(--accent-glow-strong);
+            color: var(--accent-bright);
+        }
+        .sort-btn:active { transform: scale(0.95); }
+
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
         .card {
@@ -116,22 +148,51 @@
             overflow: hidden; position: relative;
             transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
+        .card.sold-out { opacity: 0.7; }
         .card::before {
             content: ''; position: absolute; inset: 0;
             background: var(--gradient-card); z-index: 1;
             pointer-events: none; border-radius: 24px;
         }
         .card:active { transform: scale(0.96); border-color: var(--border-light); }
+        .card.sold-out:active { transform: scale(0.98); }
 
         .card-img-wrap { position: relative; overflow: hidden; }
         .card-img {
             width: 100%; height: 200px; object-fit: cover;
             transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
+        .card-img.grayscale {
+            filter: grayscale(100%);
+            opacity: 0.6;
+        }
         .card:active .card-img { transform: scale(1.05); }
         .card-img-overlay {
             position: absolute; bottom: 0; left: 0; right: 0; height: 80px;
             background: linear-gradient(transparent, rgba(12, 11, 13, 0.8)); z-index: 2;
+        }
+
+        /* Sold out overlay */
+        .sold-out-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(12, 11, 13, 0.5);
+            z-index: 5;
+        }
+        .sold-out-badge {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            color: var(--text-dim);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border: 1px solid var(--border);
         }
 
         .card-content { position: relative; z-index: 2; padding: 16px 16px 18px; }
@@ -141,6 +202,50 @@
         }
         .card-price { font-size: 17px; font-weight: 600; color: var(--accent-bright); letter-spacing: 0.5px; }
         .card-price span { font-size: 13px; font-weight: 400; color: var(--text-dim); }
+        .card-price.sold-out { color: var(--text-dim); text-decoration: line-through; }
+
+        /* Inline counter on card */
+        .card-cart-controls {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            background: var(--glass-heavy);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .card-cart-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .card-cart-btn:active { background: var(--accent-glow); color: var(--accent-bright); }
+        .card-cart-btn.add-btn {
+            background: linear-gradient(135deg, var(--accent), var(--gold));
+            color: #0c0b0d;
+            font-weight: 600;
+            font-size: 18px;
+        }
+        .card-cart-btn.add-btn:active { transform: scale(0.9); }
+        .card-cart-value {
+            width: 32px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
 
         .card-add-btn {
             position: absolute; bottom: 16px; right: 16px; z-index: 3;
@@ -322,6 +427,22 @@
         .input-field:focus { border-color: var(--accent-glow-strong); background: rgba(212, 160, 160, 0.03); }
         .input-field::placeholder { color: var(--text-dim); }
 
+        .select-field {
+            width: 100%; background: var(--glass-heavy);
+            border: 1px solid var(--border); color: var(--text-main);
+            padding: 16px 18px; border-radius: 16px; outline: none;
+            font-family: 'Inter', sans-serif; font-size: 14px;
+            margin-bottom: 12px; transition: border-color 0.3s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%237a7580' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 18px;
+            padding-right: 40px;
+        }
+        .select-field:focus { border-color: var(--accent-glow-strong); background-color: rgba(212, 160, 160, 0.03); }
+        .select-field option { background: var(--bg-elevated); color: var(--text-main); }
+
         .btn {
             display: block; width: 100%; padding: 18px; border: none;
             border-radius: 18px; font-family: 'Inter', sans-serif;
@@ -425,6 +546,13 @@
             font-family: 'Inter', sans-serif;
         }
 
+        /* Category selects in admin */
+        .category-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
         .empty-state { text-align: center; padding: 60px 20px; }
         .empty-state-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
         .empty-state-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--text-dim); font-weight: 400; }
@@ -456,6 +584,19 @@
             max-width: 300px; text-align: center;
             pointer-events: none;
         }
+
+        /* Address selector styles */
+        .address-section {
+            margin-bottom: 16px;
+        }
+        .address-label {
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -470,6 +611,13 @@
         <div class="section-header">
             <div class="section-title">Коллекция</div>
             <div class="section-badge" id="items-count"></div>
+        </div>
+        <!-- Sort buttons -->
+        <div class="sort-bar">
+            <button class="sort-btn active" onclick="setSort('default', this)">Все</button>
+            <button class="sort-btn" onclick="setSort('price-asc', this)">Цена ↑</button>
+            <button class="sort-btn" onclick="setSort('price-desc', this)">Цена ↓</button>
+            <button class="sort-btn" onclick="setSort('stock', this)">В наличии</button>
         </div>
         <div class="grid" id="catalog-container"></div>
     </div>
@@ -506,6 +654,30 @@
             <input type="number" id="add-price" placeholder="Цена, ₽" class="input-field">
             <input type="text" id="add-img" placeholder="URL фотографии" class="input-field">
             <input type="number" id="add-stock" placeholder="Количество" class="input-field">
+            <!-- Category selects -->
+            <div class="category-row">
+                <select id="add-color" class="select-field">
+                    <option value="">Цвет букета</option>
+                    <option value="red">Красный</option>
+                    <option value="pink">Розовый</option>
+                    <option value="white">Белый</option>
+                    <option value="yellow">Желтый</option>
+                    <option value="purple">Фиолетовый</option>
+                    <option value="orange">Оранжевый</option>
+                    <option value="mixed">Микс</option>
+                </select>
+                <select id="add-flower-type" class="select-field">
+                    <option value="">Тип цветов</option>
+                    <option value="roses">Розы</option>
+                    <option value="peonies">Пионы</option>
+                    <option value="tulips">Тюльпаны</option>
+                    <option value="chrysanthemums">Хризантемы</option>
+                    <option value="lilies">Лилии</option>
+                    <option value="orchids">Орхидеи</option>
+                    <option value="mixed">Микс</option>
+                    <option value="other">Другое</option>
+                </select>
+            </div>
             <button class="btn btn-primary" onclick="apiAction('admin_add')">Добавить в коллекцию</button>
         </div>
         <div id="admin-list"></div>
@@ -536,13 +708,30 @@
 
 <script>
     const tg = window.Telegram.WebApp;
-    const API_URL = 'https://bikuramustar.beget.app/webhook/9807132c-fdc3-4e47-bb28-144e16feebe1';
+    const API_URL = 'https://bikuramustar.beget.app/webhook-test/9807132c-fdc3-4e47-bb28-144e16feebe1';
     const MY_ID = 784237794;
 
     let products = [];
     let cart = [];
     let paymentCheckInterval;
     let currentModalCount = 1;
+    let currentSort = 'default';
+
+    // Moscow districts for address selection
+    const moscowDistricts = [
+        'Центральный АО',
+        'Северный АО',
+        'Северо-Восточный АО',
+        'Восточный АО',
+        'Юго-Восточный АО',
+        'Южный АО',
+        'Юго-Западный АО',
+        'Западный АО',
+        'Северо-Западный АО',
+        'Зеленоградский АО',
+        'Троицкий АО',
+        'Новомосковский АО'
+    ];
 
     function showToast(msg) {
         const container = document.getElementById('toast-container');
@@ -560,7 +749,18 @@
         badge.className = total > 0 ? 'cart-badge visible' : 'cart-badge';
     }
 
+    function getCartItemCount(productId) {
+        const item = cart.find(c => String(c.id) === String(productId));
+        return item ? item.count : 0;
+    }
+
     function addToCart(productId, count) {
+        const product = products.find(p => String(p.id) === String(productId));
+        if (!product || product.stock <= 0) {
+            showToast('Товар распродан');
+            return;
+        }
+        
         const existing = cart.find(c => String(c.id) === String(productId));
         if (existing) {
             existing.count += count;
@@ -569,8 +769,7 @@
         }
         updateCartBadge();
         renderCatalog();
-        const p = products.find(x => String(x.id) === String(productId));
-        showToast(`${p ? p.name : 'Товар'} добавлен в корзину`);
+        showToast(`${product.name} добавлен в корзину`);
         tg.HapticFeedback.impactOccurred('light');
     }
 
@@ -581,12 +780,21 @@
         renderCatalog();
     }
 
-    function updateCartCount(productId, delta) {
+    function updateCartItemCount(productId, delta) {
         const item = cart.find(c => String(c.id) === String(productId));
+        const product = products.find(p => String(p.id) === String(productId));
+        
         if (!item) return;
-        item.count = Math.max(1, item.count + delta);
-        updateCartBadge();
-        renderCart();
+        
+        const newCount = item.count + delta;
+        if (newCount <= 0) {
+            removeFromCart(productId);
+        } else {
+            item.count = newCount;
+            updateCartBadge();
+            renderCatalog();
+            renderCart();
+        }
     }
 
     function getCartTotal() {
@@ -615,6 +823,8 @@
             payload.price = document.getElementById('add-price').value;
             payload.image_url = document.getElementById('add-img').value;
             payload.stock = document.getElementById('add-stock').value;
+            payload.color = document.getElementById('add-color').value;
+            payload.flower_type = document.getElementById('add-flower-type').value;
         }
 
         try {
@@ -639,24 +849,81 @@
         } catch(e) { console.error(e); }
     }
 
+    function setSort(sortType, btn) {
+        currentSort = sortType;
+        document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderCatalog();
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function getSortedProducts() {
+        let sorted = [...products];
+        switch (currentSort) {
+            case 'price-asc':
+                sorted.sort((a, b) => parseInt(a.price) - parseInt(b.price));
+                break;
+            case 'price-desc':
+                sorted.sort((a, b) => parseInt(b.price) - parseInt(a.price));
+                break;
+            case 'stock':
+                sorted.sort((a, b) => (b.stock > 0 ? 1 : 0) - (a.stock > 0 ? 1 : 0));
+                break;
+            default:
+                break;
+        }
+        return sorted;
+    }
+
     function renderCatalog() {
         const container = document.getElementById('catalog-container');
         const countEl = document.getElementById('items-count');
-        if (countEl) countEl.textContent = products.length + ' штук';
+        const sortedProducts = getSortedProducts();
+        
+        if (countEl) countEl.textContent = sortedProducts.length + ' штук';
 
-        container.innerHTML = products.map((p, i) => `
-            <div class="card" style="animation: floatUp 0.5s ease ${i * 0.08}s both;">
-                <div class="card-img-wrap" onclick="openProduct('${p.id}')">
-                    <img src="${p.image_url}" class="card-img" loading="lazy">
-                    <div class="card-img-overlay"></div>
+        container.innerHTML = sortedProducts.map((p, i) => {
+            const isSoldOut = p.stock <= 0;
+            const cartCount = getCartItemCount(p.id);
+            const inCart = cartCount > 0;
+            
+            // Render cart controls or add button
+            let cartButtonHtml;
+            if (isSoldOut) {
+                cartButtonHtml = '';
+            } else if (inCart) {
+                cartButtonHtml = `
+                    <div class="card-cart-controls">
+                        <button class="card-cart-btn" onclick="event.stopPropagation(); updateCartItemCount('${p.id}', -1)">&#8722;</button>
+                        <span class="card-cart-value">${cartCount}</span>
+                        <button class="card-cart-btn" onclick="event.stopPropagation(); updateCartItemCount('${p.id}', 1)">+</button>
+                    </div>
+                `;
+            } else {
+                cartButtonHtml = `
+                    <button class="card-cart-btn add-btn" onclick="event.stopPropagation(); addToCart('${p.id}', 1)">+</button>
+                `;
+            }
+            
+            return `
+                <div class="card ${isSoldOut ? 'sold-out' : ''}" style="animation: floatUp 0.5s ease ${i * 0.08}s both;">
+                    <div class="card-img-wrap" onclick="${isSoldOut ? '' : `openProduct('${p.id}')`}">
+                        <img src="${p.image_url}" class="card-img ${isSoldOut ? 'grayscale' : ''}" loading="lazy">
+                        <div class="card-img-overlay"></div>
+                        ${isSoldOut ? `
+                            <div class="sold-out-overlay">
+                                <span class="sold-out-badge">Распродано</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="card-content" onclick="${isSoldOut ? '' : `openProduct('${p.id}')`}">
+                        <div class="card-name">${p.name}</div>
+                        <div class="card-price ${isSoldOut ? 'sold-out' : ''}">${p.price} <span>₽</span></div>
+                    </div>
+                    ${cartButtonHtml}
                 </div>
-                <div class="card-content" onclick="openProduct('${p.id}')">
-                    <div class="card-name">${p.name}</div>
-                    <div class="card-price">${p.price} <span>₽</span></div>
-                </div>
-                <button class="card-add-btn ${isInCart(p.id) ? 'in-cart' : ''}" onclick="event.stopPropagation(); addToCart('${p.id}', 1)">${isInCart(p.id) ? '&#10003;' : '+'}</button>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     function renderCart() {
@@ -689,7 +956,7 @@
                         <div class="cart-item-controls">
                             <button class="cart-ctrl-btn remove" onclick="removeFromCart('${p.id}')">&#8722;</button>
                             <span class="cart-ctrl-val">${c.count}</span>
-                            <button class="cart-ctrl-btn" onclick="updateCartCount('${p.id}', 1)">+</button>
+                            <button class="cart-ctrl-btn" onclick="updateCartItemCount('${p.id}', 1)">+</button>
                         </div>
                     </div>
                 </div>
@@ -713,12 +980,23 @@
             </div>
         `;
 
+        // Build district options
+        const districtOptions = moscowDistricts.map(d => `<option value="${d}">${d}</option>`).join('');
+
         checkoutSection.style.display = 'block';
         checkoutSection.innerHTML = `
             <div class="order-section" style="margin-top: 20px;">
                 <div class="order-section-title">Оформление заказа</div>
                 <input type="text" id="c-name" placeholder="Ваше имя" class="input-field">
                 <input type="tel" id="c-phone" placeholder="Телефон" class="input-field">
+                <div class="address-section">
+                    <label class="address-label">Адрес доставки (Москва)</label>
+                    <select id="c-district" class="select-field">
+                        <option value="">Выберите район</option>
+                        ${districtOptions}
+                    </select>
+                    <input type="text" id="c-address" placeholder="Улица, дом, квартира" class="input-field">
+                </div>
                 <button class="btn btn-primary" onclick="startCartPayment()">Оплатить ${total} ₽</button>
             </div>
         `;
@@ -729,7 +1007,11 @@
         list.innerHTML = products.map(p => `
             <div class="admin-item">
                 <div class="admin-item-name">${p.name}</div>
-                <div class="admin-item-stock">В наличии: ${p.stock} шт.</div>
+                <div class="admin-item-stock">
+                    В наличии: ${p.stock} шт.
+                    ${p.color ? `<span style="margin-left: 10px;">| Цвет: ${p.color}</span>` : ''}
+                    ${p.flower_type ? `<span style="margin-left: 10px;">| Тип: ${p.flower_type}</span>` : ''}
+                </div>
                 <div style="display:flex; align-items:center; justify-content:space-between;">
                     <div class="admin-stock-controls">
                         <button class="count-btn" style="width:36px;height:36px;font-size:14px;" onclick="changeLocalStock('${p.id}', -1)">-</button>
@@ -795,6 +1077,14 @@
                         <span class="order-detail-label">Количество</span>
                         <span class="order-detail-value">${o.count || 1} шт.</span>
                     </div>
+                    <div class="order-detail-row">
+                        <span class="order-detail-label">Адрес доставки</span>
+                        <span class="order-detail-value">${o.address || 'Москва'}</span>
+                    </div>
+                    <div class="order-detail-row">
+                        <span class="order-detail-label">Телефон</span>
+                        <span class="order-detail-value">${o.phone || '-'}</span>
+                    </div>
                 </div>
             </div>
         `).join('');
@@ -848,8 +1138,15 @@
     async function startCartPayment() {
         const name = document.getElementById('c-name').value;
         const phone = document.getElementById('c-phone').value;
+        const district = document.getElementById('c-district').value;
+        const address = document.getElementById('c-address').value;
+        
         if (!name || !phone) { tg.showAlert("Заполните данные!"); return; }
+        if (!district) { tg.showAlert("Выберите район Москвы!"); return; }
+        if (!address) { tg.showAlert("Укажите адрес доставки!"); return; }
         if (cart.length === 0) { tg.showAlert("Корзина пуста!"); return; }
+
+        const fullAddress = `${district}, ${address}`;
 
         const checkoutSection = document.getElementById('cart-checkout-section');
         tg.MainButton.setText("СОЗДАНИЕ СЧЕТА...").show();
@@ -862,7 +1159,8 @@
         const res = await apiAction('pay', {
             items,
             customerName: name,
-            customerPhone: phone
+            customerPhone: phone,
+            address: fullAddress
         });
 
         if (res?.paymentUrl) {
