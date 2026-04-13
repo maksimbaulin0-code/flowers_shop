@@ -826,6 +826,10 @@
     }
 
     async function cancelOrder(orderId, status) {
+        if (!orderId || orderId === 'undefined' || orderId === 'null') {
+            tg.showAlert("Не удалось определить номер заказа");
+            return;
+        }
         const confirmed = await new Promise(resolve => {
             tg.showConfirm(
                 status === 'paid'
@@ -838,7 +842,6 @@
 
         const payload = { action: 'cancel_order', orderId: orderId };
         if (status === 'paid') {
-            payload.orderId = orderId;
             payload.isPaid = true;
         } else {
             payload.isPaid = false;
@@ -1151,7 +1154,7 @@
             <div class="order-card" onclick="this.classList.toggle('open')" style="animation: floatUp 0.4s ease ${i * 0.06}s both;">
                 <div class="order-header">
                     <div>
-                        <div class="order-id">Заказ #${o.orderId ? o.orderId.slice(0,8) : '000'}</div>
+                        <div class="order-id">Заказ #${(o.orderId || o.id || o.order_id || '000').toString().slice(0,8)}</div>
                         <div class="order-date">${o.date || ''}</div>
                     </div>
                     <div class="order-status ${o.status === 'paid' ? 'status-paid' : 'status-pending'}">${o.status === 'paid' ? 'Оплачен' : 'Ожидает'}</div>
@@ -1179,7 +1182,7 @@
                         <span class="order-detail-label">Комментарий</span>
                         <span class="order-detail-value">${o.comment}</span>
                     </div>` : ''}
-                    <button class="cancel-order-btn" onclick="event.stopPropagation(); cancelOrder('${o.orderId}', '${o.status}')">Отменить заказ</button>
+                    <button class="cancel-order-btn" onclick="event.stopPropagation(); cancelOrder('${o.orderId || o.id || o.order_id || ''}', '${o.status}')">Отменить заказ</button>
                 </div>
             </div>
         `).join('');
@@ -1306,7 +1309,7 @@
             startPaymentTimer();
             if (res.orderId) {
                 clearInterval(paymentCheckInterval);
-                paymentCheckInterval = setInterval(() => checkPaymentStatus(res.orderId), 3000);
+                paymentCheckInterval = setInterval(() => checkPaymentStatus(res.orderId), 8000);
             }
             tg.openLink(res.paymentUrl);
         }
