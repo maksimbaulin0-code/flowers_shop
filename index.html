@@ -1030,7 +1030,7 @@
     function setFilter(filterType, value, btn) {
         if (filterType === 'sort') {
             currentSort = value;
-            document.querySelectorAll('.sort-bar:first-child .sort-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
             if (btn) btn.classList.add('active');
         } else if (filterType === 'color') {
             currentFilterColor = value;
