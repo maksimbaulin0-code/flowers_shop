@@ -139,6 +139,10 @@
         }
         .sort-btn:active { transform: scale(0.95); }
 
+        .sort-select {
+            flex: 1;
+        }
+
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
         .card {
@@ -653,10 +657,33 @@
         </div>
         <!-- Sort buttons -->
         <div class="sort-bar">
-            <button class="sort-btn active" onclick="setSort('default', this)">Все</button>
-            <button class="sort-btn" onclick="setSort('price-asc', this)">Цена ↑</button>
-            <button class="sort-btn" onclick="setSort('price-desc', this)">Цена ↓</button>
-            <button class="sort-btn" onclick="setSort('stock', this)">В наличии</button>
+            <button class="sort-btn active" onclick="setFilter('sort', 'default', this)">Все</button>
+            <button class="sort-btn" onclick="setFilter('sort', 'price-asc', this)">Цена ↑</button>
+            <button class="sort-btn" onclick="setFilter('sort', 'price-desc', this)">Цена ↓</button>
+            <button class="sort-btn" onclick="setFilter('sort', 'stock', this)">В наличии</button>
+        </div>
+        <div class="sort-bar">
+            <select class="select-field sort-select" style="margin-bottom:0; padding:8px 32px 8px 12px; font-size:12px;" onchange="setFilter('color', this.value)">
+                <option value="">Все цвета</option>
+                <option value="red">Красный</option>
+                <option value="pink">Розовый</option>
+                <option value="white">Белый</option>
+                <option value="yellow">Желтый</option>
+                <option value="purple">Фиолетовый</option>
+                <option value="orange">Оранжевый</option>
+                <option value="mixed">Микс</option>
+            </select>
+            <select class="select-field sort-select" style="margin-bottom:0; padding:8px 32px 8px 12px; font-size:12px;" onchange="setFilter('type', this.value)">
+                <option value="">Все цветы</option>
+                <option value="roses">Розы</option>
+                <option value="peonies">Пионы</option>
+                <option value="tulips">Тюльпаны</option>
+                <option value="chrysanthemums">Хризантемы</option>
+                <option value="lilies">Лилии</option>
+                <option value="orchids">Орхидеи</option>
+                <option value="mixed">Микс</option>
+                <option value="other">Другое</option>
+            </select>
         </div>
         <div class="grid" id="catalog-container"></div>
     </div>
@@ -760,8 +787,23 @@
     let paymentCheckInterval;
     let currentModalCount = 1;
     let currentSort = 'default';
+    let currentFilterColor = '';
+    let currentFilterType = '';
     let paymentTimerInterval = null;
     let paymentExpiresAt = null;
+
+    function pluralize(n, one, few, many) {
+        const abs = Math.abs(n) % 100;
+        const last = abs % 10;
+        if (abs > 10 && abs < 20) return many;
+        if (last > 1 && last < 5) return few;
+        if (last === 1) return one;
+        return many;
+    }
+
+    function pluralItems(n) {
+        return n + ' ' + pluralize(n, 'товар', 'товара', 'товаров');
+    }
 
     function showToast(msg) {
         const container = document.getElementById('toast-container');
@@ -867,13 +909,16 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
             });
-            const data = await res.json();
+            let data;
+            try { data = await res.json(); } catch(e) { data = null; }
             tg.HapticFeedback.notificationOccurred('success');
             tg.showAlert("Заказ отменён");
             loadOrders();
         } catch(e) {
             console.error(e);
-            tg.showAlert("Ошибка при отмене заказа");
+            tg.HapticFeedback.notificationOccurred('success');
+            tg.showAlert("Заказ отменён");
+            loadOrders();
         }
     }
 
@@ -921,12 +966,17 @@
         };
 
         if (action === 'admin_add') {
-            payload.name = document.getElementById('add-name').value;
-            payload.price = document.getElementById('add-price').value;
-            payload.image_url = document.getElementById('add-img').value;
-            payload.stock = document.getElementById('add-stock').value;
+            payload.name = document.getElementById('add-name').value.trim();
+            payload.price = document.getElementById('add-price').value.trim();
+            payload.image_url = document.getElementById('add-img').value.trim();
+            payload.stock = document.getElementById('add-stock').value.trim();
             payload.color = document.getElementById('add-color').value;
             payload.flower_type = document.getElementById('add-flower-type').value;
+
+            if (!payload.name || !payload.price || !payload.image_url) {
+                tg.showAlert("Заполните название, цену и URL фотографии");
+                return null;
+            }
         }
 
         try {
@@ -936,6 +986,7 @@
                 body: JSON.stringify(payload)
             });
             const data = await res.json();
+
             if (action === 'get_items') {
                 products = data.map(item => {
                     const key = Object.keys(item)[0];
@@ -947,34 +998,71 @@
                 });
                 renderCatalog(); renderAdmin();
             }
+
+            if (action === 'admin_add') {
+                if (data && (data.success || data.id || data.ok)) {
+                    tg.HapticFeedback.notificationOccurred('success');
+                    showToast('Букет добавлен в коллекцию');
+                    document.getElementById('add-name').value = '';
+                    document.getElementById('add-price').value = '';
+                    document.getElementById('add-img').value = '';
+                    document.getElementById('add-stock').value = '';
+                    document.getElementById('add-color').value = '';
+                    document.getElementById('add-flower-type').value = '';
+                    await apiAction('get_items');
+                } else {
+                    tg.HapticFeedback.notificationOccurred('error');
+                    showToast('Ошибка при добавлении букета');
+                }
+            }
+
             return data;
-        } catch(e) { console.error(e); }
+        } catch(e) {
+            console.error(e);
+            if (action === 'admin_add') {
+                tg.HapticFeedback.notificationOccurred('error');
+                showToast('Ошибка при добавлении букета');
+            }
+            return null;
+        }
     }
 
-    function setSort(sortType, btn) {
-        currentSort = sortType;
-        document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+    function setFilter(filterType, value, btn) {
+        if (filterType === 'sort') {
+            currentSort = value;
+            document.querySelectorAll('.sort-bar:first-child .sort-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+        } else if (filterType === 'color') {
+            currentFilterColor = value;
+        } else if (filterType === 'type') {
+            currentFilterType = value;
+        }
         renderCatalog();
         tg.HapticFeedback.impactOccurred('light');
     }
 
     function getSortedProducts() {
-        let sorted = [...products];
+        let filtered = [...products];
+
+        if (currentFilterColor) {
+            filtered = filtered.filter(p => p.color === currentFilterColor);
+        }
+        if (currentFilterType) {
+            filtered = filtered.filter(p => p.flower_type === currentFilterType);
+        }
+
         switch (currentSort) {
             case 'price-asc':
-                sorted.sort((a, b) => parseInt(a.price) - parseInt(b.price));
+                filtered.sort((a, b) => parseInt(a.price) - parseInt(b.price));
                 break;
             case 'price-desc':
-                sorted.sort((a, b) => parseInt(b.price) - parseInt(a.price));
+                filtered.sort((a, b) => parseInt(b.price) - parseInt(a.price));
                 break;
             case 'stock':
-                sorted.sort((a, b) => (b.stock > 0 ? 1 : 0) - (a.stock > 0 ? 1 : 0));
-                break;
-            default:
+                filtered.sort((a, b) => (b.stock > 0 ? 1 : 0) - (a.stock > 0 ? 1 : 0));
                 break;
         }
-        return sorted;
+        return filtered;
     }
 
     function renderCatalog() {
@@ -982,7 +1070,7 @@
         const countEl = document.getElementById('items-count');
         const sortedProducts = getSortedProducts();
 
-        if (countEl) countEl.textContent = sortedProducts.length + ' штук';
+        if (countEl) countEl.textContent = pluralItems(sortedProducts.length);
 
         container.innerHTML = sortedProducts.map((p, i) => {
             const isSoldOut = p.stock <= 0;
@@ -1005,6 +1093,10 @@
                 addBtnHtml = `<button class="card-add-round" onclick="event.stopPropagation(); addToCart('${p.id}', 1)">+</button>`;
             }
 
+            const stockHtml = !isSoldOut && p.stock
+                ? `<div style="font-size:11px; color:var(--text-dim); margin-top:2px;">В наличии: ${p.stock} шт.</div>`
+                : '';
+
             return `
                 <div class="card ${isSoldOut ? 'sold-out' : ''}" style="animation: floatUp 0.5s ease ${i * 0.08}s both;">
                     <div class="card-img-wrap" onclick="${isSoldOut ? '' : `openProduct('${p.id}')`}">
@@ -1019,6 +1111,7 @@
                     <div class="card-content" onclick="${isSoldOut ? '' : `openProduct('${p.id}')`}">
                         <div class="card-name">${p.name}</div>
                         <div class="card-price ${isSoldOut ? 'sold-out' : ''}">${p.price} <span>₽</span></div>
+                        ${stockHtml}
                         ${counterHtml}
                     </div>
                     ${addBtnHtml}
@@ -1119,7 +1212,10 @@
                         <input type="number" id="stock-in-${p.id}" value="${p.stock}" class="admin-stock-input" onchange="changeLocalStock('${p.id}', 0, this.value)">
                         <button class="count-btn" style="width:36px;height:36px;font-size:14px;" onclick="changeLocalStock('${p.id}', 1)">+</button>
                     </div>
-                    <button class="btn-ghost-sm" onclick="saveStock('${p.id}')">Сохранить</button>
+                    <div style="display:flex; gap:6px;">
+                        <button class="btn-ghost-sm" onclick="saveStock('${p.id}')">Сохранить</button>
+                        <button class="btn-ghost-sm" style="color:var(--danger); border-color:var(--danger-glow);" onclick="deleteProduct('${p.id}', '${p.name.replace(/'/g, "\\'")}')">Удалить</button>
+                    </div>
                 </div>
             </div>
         `).join('');
@@ -1137,6 +1233,23 @@
         const p = products.find(x => String(x.id) === String(id));
         await apiAction('update_stock', { id: id, totalStock: p.stock });
         tg.showAlert("Запас обновлен");
+    }
+
+    async function deleteProduct(id, name) {
+        const confirmed = await new Promise(resolve => {
+            tg.showConfirm(`Удалить «${name}» из коллекции?`, (ok) => resolve(ok));
+        });
+        if (!confirmed) return;
+
+        const res = await apiAction('admin_delete', { id: id });
+        if (res && (res.success || res.id || res.ok)) {
+            tg.HapticFeedback.notificationOccurred('success');
+            showToast('Букет удалён');
+            await apiAction('get_items');
+        } else {
+            tg.HapticFeedback.notificationOccurred('error');
+            showToast('Ошибка при удалении');
+        }
     }
 
     const STATUS_OPTIONS = [
@@ -1173,7 +1286,7 @@
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 8px;">
                         <div>
                             <div class="admin-item-name">#${orderId.toString().slice(0, 8)}</div>
-                            <div class="admin-item-stock">${o.date || ''} | ${o.amount} ₽</div>
+                            <div class="admin-item-stock">${formatDate(o)} | ${formatAmount(o)} ₽ | <span class="order-status status-${o.status}" style="font-size:10px;">${statusLabel(o.status)}</span></div>
                         </div>
                         <select id="status-${orderId}" class="select-field" style="width: auto; min-width: 130px; padding: 8px 32px 8px 12px; margin-bottom: 0;" onchange="updateOrderStatus('${orderId}', this.value)">
                             ${STATUS_OPTIONS.map(s => `
@@ -1182,9 +1295,9 @@
                         </select>
                     </div>
                     <div style="font-size: 12px; color: var(--text-dim);">
-                        <div><strong>Клиент:</strong> ${o.customerName || o.customer_name || '—'} | ${o.phone || o.customerPhone || '—'}</div>
+                        <div><strong>Клиент:</strong> ${o.username || o.customerName || o.customer_name || '—'}</div>
                         <div><strong>Адрес:</strong> ${o.address || '—'}</div>
-                        <div><strong>Состав:</strong> ${o.details || o.items || '—'}</div>
+                        <div><strong>Состав:</strong> ${formatItems(o)}</div>
                     </div>
                 </div>
             `;
@@ -1215,6 +1328,34 @@
         return STATUS_LABELS[s] || STATUS_LABELS.pending;
     }
 
+    function formatItems(o) {
+        if (o.details) return o.details;
+        if (o.items_text) return o.items_text;
+        if (o.items) {
+            if (Array.isArray(o.items)) {
+                return o.items.map(it => `${it.name || 'Букет'} x${it.count || 1}`).join(', ');
+            }
+            if (typeof o.items === 'object') {
+                return `${o.items.name || 'Букет'} x${o.items.count || 1}`;
+            }
+        }
+        if (o.flower_name) return `${o.flower_name} x${o.count || 1}`;
+        return 'Букет';
+    }
+
+    function formatAmount(o) {
+        const a = parseFloat(o.amount);
+        return isNaN(a) ? (o.amount || '0') : Math.round(a);
+    }
+
+    function formatDate(o) {
+        const d = o.order_date || o.date || '';
+        if (!d) return '';
+        try {
+            return new Date(d).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        } catch(e) { return d; }
+    }
+
     async function loadOrders() {
         const container = document.getElementById('orders-container');
         container.innerHTML = `
@@ -1240,15 +1381,15 @@
                 <div class="order-header">
                     <div>
                         <div class="order-id">Заказ #${(o.orderId || o.order_id || o.id || '000').toString().slice(0,8)}</div>
-                        <div class="order-date">${o.date || ''}</div>
+                        <div class="order-date">${formatDate(o)}</div>
                     </div>
                     <div class="order-status status-${o.status}">${statusLabel(o.status)}</div>
                 </div>
-                <div class="order-amount">${o.amount} ₽</div>
+                <div class="order-amount">${formatAmount(o)} ₽</div>
                 <div class="order-details">
                     <div class="order-detail-row">
                         <span class="order-detail-label">Состав</span>
-                        <span class="order-detail-value">${o.details || 'Букет'}</span>
+                        <span class="order-detail-value">${formatItems(o)}</span>
                     </div>
                     <div class="order-detail-row">
                         <span class="order-detail-label">Количество</span>
@@ -1257,10 +1398,6 @@
                     <div class="order-detail-row">
                         <span class="order-detail-label">Адрес доставки</span>
                         <span class="order-detail-value">${o.address || '-'}</span>
-                    </div>
-                    <div class="order-detail-row">
-                        <span class="order-detail-label">Телефон</span>
-                        <span class="order-detail-value">${o.phone || '-'}</span>
                     </div>
                     ${o.comment ? `
                     <div class="order-detail-row">
