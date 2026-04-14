@@ -720,6 +720,11 @@
             <button class="btn btn-primary" onclick="apiAction('admin_add')">Добавить в коллекцию</button>
         </div>
         <div id="admin-list"></div>
+
+        <div class="admin-panel" style="margin-top: 24px;">
+            <div class="admin-panel-title">Заказы</div>
+            <div id="admin-orders-container"></div>
+        </div>
     </div>
 </div>
 
@@ -1120,6 +1125,74 @@
         `).join('');
     }
 
+    const STATUS_OPTIONS = [
+        { value: 'pending', label: 'Ожидает' },
+        { value: 'paid', label: 'Оплачен' },
+        { value: 'assembling', label: 'Собирается' },
+        { value: 'delivering', label: 'В пути' },
+        { value: 'delivered', label: 'Доставлен' },
+        { value: 'cancelled', label: 'Отменён' }
+    ];
+
+    async function loadAdminOrders() {
+        const container = document.getElementById('admin-orders-container');
+        container.innerHTML = `
+            <div class="loading-skeleton" style="height:80px; margin-bottom:12px;"></div>
+            <div class="loading-skeleton" style="height:80px; margin-bottom:12px;"></div>
+        `;
+        
+        const orders = await apiAction('get_orders');
+        
+        if (!orders || orders.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="padding: 30px 10px;">
+                    <div class="empty-state-text">Заказов пока нет</div>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = orders.map(o => {
+            const orderId = o.orderId || o.order_id || o.id || '';
+            return `
+                <div class="admin-item" style="margin-bottom: 16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 8px;">
+                        <div>
+                            <div class="admin-item-name">#${orderId.toString().slice(0, 8)}</div>
+                            <div class="admin-item-stock">${o.date || ''} | ${o.amount} ₽</div>
+                        </div>
+                        <select id="status-${orderId}" class="select-field" style="width: auto; min-width: 130px; padding: 8px 32px 8px 12px; margin-bottom: 0;" onchange="updateOrderStatus('${orderId}', this.value)">
+                            ${STATUS_OPTIONS.map(s => `
+                                <option value="${s.value}" ${o.status === s.value ? 'selected' : ''}>${s.label}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-dim);">
+                        <div><strong>Клиент:</strong> ${o.customerName || o.customer_name || '—'} | ${o.phone || o.customerPhone || '—'}</div>
+                        <div><strong>Адрес:</strong> ${o.address || '—'}</div>
+                        <div><strong>Состав:</strong> ${o.details || o.items || '—'}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function updateOrderStatus(orderId, newStatus) {
+        const res = await apiAction('update_order_status', {
+            orderId: orderId,
+            status: newStatus
+        });
+        
+        if (res?.success) {
+            tg.HapticFeedback.notificationOccurred('success');
+            showToast('Статус обновлён');
+        } else {
+            tg.HapticFeedback.notificationOccurred('error');
+            showToast('Ошибка обновления');
+            loadAdminOrders();
+        }
+    }
+
     function changeLocalStock(id, delta, manualValue = null) {
         const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
@@ -1362,6 +1435,7 @@
         el.classList.add('active');
         if (p === 'profile') loadOrders();
         if (p === 'cart') renderCart();
+        if (p === 'admin') { renderAdmin(); loadAdminOrders(); }
         tg.HapticFeedback.impactOccurred('light');
     }
 
