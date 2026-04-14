@@ -1125,6 +1125,20 @@
         `).join('');
     }
 
+    function changeLocalStock(id, delta, manualValue = null) {
+        const p = products.find(x => String(x.id) === String(id));
+        if (!p) return;
+        if (manualValue !== null) p.stock = parseInt(manualValue) || 0;
+        else p.stock = Math.max(0, p.stock + delta);
+        document.getElementById(`stock-in-${id}`).value = p.stock;
+    }
+
+    async function saveStock(id) {
+        const p = products.find(x => String(x.id) === String(id));
+        await apiAction('update_stock', { id: id, totalStock: p.stock });
+        tg.showAlert("Запас обновлен");
+    }
+
     const STATUS_OPTIONS = [
         { value: 'pending', label: 'Ожидает' },
         { value: 'paid', label: 'Оплачен' },
@@ -1140,9 +1154,9 @@
             <div class="loading-skeleton" style="height:80px; margin-bottom:12px;"></div>
             <div class="loading-skeleton" style="height:80px; margin-bottom:12px;"></div>
         `;
-        
+
         const orders = await apiAction('get_orders');
-        
+
         if (!orders || orders.length === 0) {
             container.innerHTML = `
                 <div class="empty-state" style="padding: 30px 10px;">
@@ -1182,7 +1196,7 @@
             orderId: orderId,
             status: newStatus
         });
-        
+
         if (res?.success) {
             tg.HapticFeedback.notificationOccurred('success');
             showToast('Статус обновлён');
@@ -1191,20 +1205,6 @@
             showToast('Ошибка обновления');
             loadAdminOrders();
         }
-    }
-
-    function changeLocalStock(id, delta, manualValue = null) {
-        const p = products.find(x => String(x.id) === String(id));
-        if (!p) return;
-        if (manualValue !== null) p.stock = parseInt(manualValue) || 0;
-        else p.stock = Math.max(0, p.stock + delta);
-        document.getElementById(`stock-in-${id}`).value = p.stock;
-    }
-
-    async function saveStock(id) {
-        const p = products.find(x => String(x.id) === String(id));
-        await apiAction('update_stock', { id: id, totalStock: p.stock });
-        tg.showAlert("Запас обновлен");
     }
 
     const STATUS_LABELS = {
