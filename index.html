@@ -241,17 +241,18 @@
         }
         .card-add-round {
             position: absolute;
-            bottom: 16px;
-            right: 16px;
+            bottom: 14px;
+            right: 14px;
             z-index: 3;
-            width: 38px;
-            height: 38px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--accent), var(--gold));
             border: none;
             color: #0c0b0d;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 300;
+            line-height: 1;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -643,6 +644,15 @@
     </style>
 </head>
 <body>
+
+<div id="loading-screen" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.4s ease;">
+    <div class="brand" style="padding:0;">
+        <div class="brand-logo" style="font-size:30px;">Renerie Ciel</div>
+        <div class="brand-sub">Floral Boutique</div>
+    </div>
+    <div style="margin-top:32px;width:36px;height:36px;border:2px solid var(--border);border-top:2px solid var(--accent);border-radius:50%;animation:spin 1s cubic-bezier(0.5,0,0.5,1) infinite;"></div>
+    <div style="margin-top:16px;font-size:12px;color:var(--text-dim);letter-spacing:1px;">ЗАГРУЗКА</div>
+</div>
 
 <div id="app">
     <div id="shop-page" class="page active">
@@ -1203,8 +1213,8 @@
                 <div class="admin-item-name">${p.name}</div>
                 <div class="admin-item-stock">
                     В наличии: ${p.stock} шт.
-                    ${p.color ? `<span style="margin-left: 10px;">| Цвет: ${p.color}</span>` : ''}
-                    ${p.flower_type ? `<span style="margin-left: 10px;">| Тип: ${p.flower_type}</span>` : ''}
+                    ${p.color ? `<span style="margin-left: 10px;">| Цвет: ${COLOR_LABELS[p.color] || p.color}</span>` : ''}
+                    ${p.flower_type ? `<span style="margin-left: 10px;">| Тип: ${FLOWER_TYPE_LABELS[p.flower_type] || p.flower_type}</span>` : ''}
                 </div>
                 <div style="display:flex; align-items:center; justify-content:space-between;">
                     <div class="admin-stock-controls">
@@ -1268,9 +1278,10 @@
             <div class="loading-skeleton" style="height:80px; margin-bottom:12px;"></div>
         `;
 
-        const orders = await apiAction('get_all_orders');
+        const allOrders = await apiAction('get_all_orders');
+        const orders = (allOrders || []).filter(o => o.status !== 'cancelled');
 
-        if (!orders || orders.length === 0) {
+        if (orders.length === 0) {
             container.innerHTML = `
                 <div class="empty-state" style="padding: 30px 10px;">
                     <div class="empty-state-text">Заказов пока нет</div>
@@ -1327,6 +1338,17 @@
     function statusLabel(s) {
         return STATUS_LABELS[s] || STATUS_LABELS.pending;
     }
+
+    const COLOR_LABELS = {
+        red: 'Красный', pink: 'Розовый', white: 'Белый',
+        yellow: 'Жёлтый', purple: 'Фиолетовый', orange: 'Оранжевый', mixed: 'Микс'
+    };
+
+    const FLOWER_TYPE_LABELS = {
+        roses: 'Розы', peonies: 'Пионы', tulips: 'Тюльпаны',
+        chrysanthemums: 'Хризантемы', lilies: 'Лилии', orchids: 'Орхидеи',
+        mixed: 'Микс', other: 'Другое'
+    };
 
     function formatItems(o) {
         if (o.details) return o.details;
@@ -1571,8 +1593,17 @@
         tg.HapticFeedback.impactOccurred('light');
     }
 
+    async function init() {
+        await apiAction('get_items');
+        const ls = document.getElementById('loading-screen');
+        if (ls) {
+            ls.style.opacity = '0';
+            setTimeout(() => ls.remove(), 400);
+        }
+    }
+
     if (tg.initDataUnsafe?.user?.id === MY_ID) document.getElementById('nav-admin').style.display = 'block';
-    apiAction('get_items');
+    init();
 </script>
 
 </body>
