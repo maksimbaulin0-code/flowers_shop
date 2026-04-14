@@ -836,6 +836,41 @@
         return item ? item.count : 0;
     }
 
+    function updateCardInCatalog(productId) {
+        const card = document.querySelector(`.card[data-id="${productId}"]`);
+        if (!card) { renderCatalog(); return; }
+        const p = products.find(x => String(x.id) === String(productId));
+        if (!p) return;
+        const cartCount = getCartItemCount(p.id);
+        const inCart = cartCount > 0;
+        const contentEl = card.querySelector('.card-content');
+        const existingAddBtn = card.querySelector('.card-add-round');
+
+        if (inCart) {
+            if (existingAddBtn) existingAddBtn.remove();
+            let controls = contentEl.querySelector('.card-cart-controls');
+            if (controls) {
+                controls.querySelector('.card-cart-value').textContent = cartCount;
+            } else {
+                const div = document.createElement('div');
+                div.className = 'card-cart-controls';
+                div.onclick = (e) => e.stopPropagation();
+                div.innerHTML = `<button class="card-cart-btn" onclick="updateCartItemCount('${p.id}', -1)">&#8722;</button><span class="card-cart-value">${cartCount}</span><button class="card-cart-btn" onclick="updateCartItemCount('${p.id}', 1)">+</button>`;
+                contentEl.appendChild(div);
+            }
+        } else {
+            const controls = contentEl.querySelector('.card-cart-controls');
+            if (controls) controls.remove();
+            if (!existingAddBtn) {
+                const btn = document.createElement('button');
+                btn.className = 'card-add-round';
+                btn.onclick = (e) => { e.stopPropagation(); addToCart(p.id, 1); };
+                btn.textContent = '+';
+                card.appendChild(btn);
+            }
+        }
+    }
+
     function addToCart(productId, count) {
         const product = products.find(p => String(p.id) === String(productId));
         if (!product || product.stock <= 0) {
@@ -850,7 +885,7 @@
             cart.push({ id: String(productId), count });
         }
         updateCartBadge();
-        renderCatalog();
+        updateCardInCatalog(productId);
         showToast(`${product.name} добавлен в корзину`);
         tg.HapticFeedback.impactOccurred('light');
     }
@@ -858,13 +893,12 @@
     function removeFromCart(productId) {
         cart = cart.filter(c => String(c.id) !== String(productId));
         updateCartBadge();
+        updateCardInCatalog(productId);
         renderCart();
-        renderCatalog();
     }
 
     function updateCartItemCount(productId, delta) {
         const item = cart.find(c => String(c.id) === String(productId));
-        const product = products.find(p => String(p.id) === String(productId));
 
         if (!item) return;
 
@@ -874,7 +908,7 @@
         } else {
             item.count = newCount;
             updateCartBadge();
-            renderCatalog();
+            updateCardInCatalog(productId);
             renderCart();
         }
     }
@@ -1108,7 +1142,7 @@
                 : '';
 
             return `
-                <div class="card ${isSoldOut ? 'sold-out' : ''}" style="animation: floatUp 0.5s ease ${i * 0.08}s both;">
+                <div class="card ${isSoldOut ? 'sold-out' : ''}" data-id="${p.id}" style="animation: floatUp 0.5s ease ${i * 0.08}s both;">
                     <div class="card-img-wrap" onclick="${isSoldOut ? '' : `openProduct('${p.id}')`}">
                         <img src="${p.image_url}" class="card-img ${isSoldOut ? 'grayscale' : ''}" loading="lazy">
                         <div class="card-img-overlay"></div>
@@ -1577,7 +1611,7 @@
             cart = [];
             updateCartBadge();
             renderCart();
-            renderCatalog();
+            await apiAction('get_items');
         }
     }
 
