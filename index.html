@@ -1477,7 +1477,10 @@
         switchPage('cart', document.querySelectorAll('.nav-btn')[1]);
     }
 
+    let isPaymentProcessing = false;
+
     async function startCartPayment() {
+        if (isPaymentProcessing) return;
         const name = document.getElementById('c-name').value.trim();
         const phone = document.getElementById('c-phone').value.trim();
         const street = document.getElementById('c-street').value.trim();
@@ -1513,6 +1516,9 @@
         const fullAddress = addressParts.join(', ');
 
         const checkoutSection = document.getElementById('cart-checkout-section');
+        isPaymentProcessing = true;
+        const payBtn = checkoutSection.querySelector('.btn-primary');
+        if (payBtn) payBtn.disabled = true;
         tg.MainButton.setText("СОЗДАНИЕ СЧЕТА...").show();
 
         const items = cart.map(c => {
@@ -1556,6 +1562,8 @@
                 paymentCheckInterval = setInterval(() => checkPaymentStatus(res.orderId), 8000);
             }
             tg.openLink(res.paymentUrl);
+        } else {
+            isPaymentProcessing = false;
         }
     }
 
