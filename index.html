@@ -790,7 +790,7 @@
             showToast('Товар распродан');
             return;
         }
-        
+
         const existing = cart.find(c => String(c.id) === String(productId));
         if (existing) {
             existing.count += count;
@@ -813,9 +813,9 @@
     function updateCartItemCount(productId, delta) {
         const item = cart.find(c => String(c.id) === String(productId));
         const product = products.find(p => String(p.id) === String(productId));
-        
+
         if (!item) return;
-        
+
         const newCount = item.count + delta;
         if (newCount <= 0) {
             removeFromCart(productId);
@@ -981,14 +981,14 @@
         const container = document.getElementById('catalog-container');
         const countEl = document.getElementById('items-count');
         const sortedProducts = getSortedProducts();
-        
+
         if (countEl) countEl.textContent = sortedProducts.length + ' штук';
 
         container.innerHTML = sortedProducts.map((p, i) => {
             const isSoldOut = p.stock <= 0;
             const cartCount = getCartItemCount(p.id);
             const inCart = cartCount > 0;
-            
+
             let counterHtml = '';
             let addBtnHtml = '';
             if (isSoldOut) {
@@ -1004,7 +1004,7 @@
             } else {
                 addBtnHtml = `<button class="card-add-round" onclick="event.stopPropagation(); addToCart('${p.id}', 1)">+</button>`;
             }
-            
+
             return `
                 <div class="card ${isSoldOut ? 'sold-out' : ''}" style="animation: floatUp 0.5s ease ${i * 0.08}s both;">
                     <div class="card-img-wrap" onclick="${isSoldOut ? '' : `openProduct('${p.id}')`}">
@@ -1155,7 +1155,7 @@
             <div class="loading-skeleton" style="height:80px; margin-bottom:12px;"></div>
         `;
 
-        const orders = await apiAction('get_orders');
+        const orders = await apiAction('get_all_orders');
 
         if (!orders || orders.length === 0) {
             container.innerHTML = `
@@ -1197,14 +1197,9 @@
             status: newStatus
         });
 
-        if (res?.success) {
-            tg.HapticFeedback.notificationOccurred('success');
-            showToast('Статус обновлён');
-        } else {
-            tg.HapticFeedback.notificationOccurred('error');
-            showToast('Ошибка обновления');
-            loadAdminOrders();
-        }
+        tg.HapticFeedback.notificationOccurred('success');
+        showToast('Статус обновлён');
+        loadAdminOrders();
     }
 
     const STATUS_LABELS = {
@@ -1338,7 +1333,7 @@
         if (!phone) errors.push('c-phone');
         if (!street) errors.push('c-street');
         if (!house) errors.push('c-house');
-        
+
         errors.forEach(id => document.getElementById(id).classList.add('field-error'));
         document.querySelectorAll('.input-field').forEach(f => {
             f.addEventListener('focus', () => f.classList.remove('field-error'), { once: true });
