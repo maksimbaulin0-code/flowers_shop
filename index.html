@@ -7,10 +7,10 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapisа.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0c0b0d;а
+            --bg: #0c0b0d;
             --bg-elevated: #141316;
             --card-bg: rgba(20, 19, 22, 0.6);
             --accent: #d4a0a0;
@@ -1313,7 +1313,7 @@
         `;
 
         const allOrders = await apiAction('get_all_orders');
-        const orders = (allOrders || []).filter(o => o.status !== 'cancelled');
+        const orders = allOrders || [];
 
         if (orders.length === 0) {
             container.innerHTML = `
@@ -1469,7 +1469,7 @@
     function openProduct(id) {
         const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
-        currentModalCount = 1;
+        currentModalCount = getCartItemCount(id) || 1;
         document.getElementById('modal-body').innerHTML = `
             <div class="modal-hero">
                 <img src="${p.image_url}">
@@ -1506,7 +1506,17 @@
     }
 
     function addToCartFromModal(productId) {
-        addToCart(productId, currentModalCount);
+        const existing = cart.find(c => String(c.id) === String(productId));
+        if (existing) {
+            existing.count = currentModalCount;
+        } else {
+            cart.push({ id: String(productId), count: currentModalCount });
+        }
+        updateCartBadge();
+        updateCardInCatalog(productId);
+        const p = products.find(x => String(x.id) === String(productId));
+        showToast(`${p ? p.name : 'Букет'} — ${currentModalCount} шт. в корзине`);
+        tg.HapticFeedback.impactOccurred('light');
         closeModal();
         switchPage('cart', document.querySelectorAll('.nav-btn')[1]);
     }
