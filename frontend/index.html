@@ -728,7 +728,11 @@
             <div class="admin-panel-title">Новый товар</div>
             <input type="text" id="add-name" placeholder="Название букета" class="input-field">
             <input type="number" id="add-price" placeholder="Цена, ₽" class="input-field">
-            <input type="text" id="add-img" placeholder="URL фотографии" class="input-field">
+            <label class="input-field" style="display: block; cursor: pointer; text-align: center; color: var(--text-dim);">
+                <input type="file" id="add-img" accept="image/*" style="display: none;">
+                <span id="add-img-label">Загрузить фото из галереи</span>
+            </label>
+            <div id="add-img-preview" style="display: none; width: 100%; height: 150px; background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border);"></div>
             <input type="number" id="add-stock" placeholder="Количество" class="input-field">
             <!-- Category selects -->
             <div class="category-row">
@@ -794,6 +798,7 @@
 
     let products = [];
     let cart = [];
+    let currentBase64Image = '';
     let paymentCheckInterval;
     let currentModalCount = 1;
     let currentSort = 'default';
@@ -1012,7 +1017,7 @@
         if (action === 'admin_add') {
             payload.name = document.getElementById('add-name').value.trim();
             payload.price = document.getElementById('add-price').value.trim();
-            payload.image_url = document.getElementById('add-img').value.trim();
+            payload.image_url = currentBase64Image;
             payload.stock = document.getElementById('add-stock').value.trim();
             payload.color = document.getElementById('add-color').value;
             payload.flower_type = document.getElementById('add-flower-type').value;
@@ -1049,7 +1054,10 @@
                     showToast('Букет добавлен в коллекцию');
                     document.getElementById('add-name').value = '';
                     document.getElementById('add-price').value = '';
+                    currentBase64Image = '';
                     document.getElementById('add-img').value = '';
+                    document.getElementById('add-img-label').textContent = 'Загрузить фото из галереи';
+                    document.getElementById('add-img-preview').style.display = 'none';
                     document.getElementById('add-stock').value = '';
                     document.getElementById('add-color').value = '';
                     document.getElementById('add-flower-type').value = '';
@@ -1653,6 +1661,37 @@
             setTimeout(() => ls.remove(), 400);
         }
     }
+
+    document.getElementById('add-img').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        document.getElementById('add-img-label').textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800;
+                const MAX_HEIGHT = 800;
+                let width = img.width;
+                let height = img.height;
+                if (width > height) {
+                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                } else {
+                    if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                }
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                currentBase64Image = canvas.toDataURL('image/jpeg', 0.8);
+                const preview = document.getElementById('add-img-preview');
+                preview.style.display = 'block';
+                preview.style.backgroundImage = `url(${currentBase64Image})`;
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
 
     if (tg.initDataUnsafe?.user?.id === MY_ID) document.getElementById('nav-admin').style.display = 'block';
     init();
