@@ -1,0 +1,7 @@
+node_modules/
+.env
+.DS_Store
+.idea/
+Цветочный.json
+Цветочный.json
+*.log
